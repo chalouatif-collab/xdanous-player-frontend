@@ -86,7 +86,7 @@
         <div class="bg-betDark h-14 md:h-16 flex justify-between items-center px-4 md:px-8 border-b border-gray-800">
             <div class="flex items-center gap-8">
                 <div class="text-xl md:text-2xl font-black italic tracking-tighter cursor-pointer flex items-center" onclick="switchSection('accueil')">
-                    <span class="text-white">x</span><span class="text-bet-yellow">danous</span>
+                    <span class="text-white">x</span><span class="text-red-600">danous</span>
                 </div>
                 
                 <nav class="hidden md:flex items-center h-full">
@@ -389,15 +389,7 @@
         </button>
     </div>
 
-    <footer class="bg-[#121212] border-t border-gray-800 mt-auto py-8 text-center text-xs text-gray-500 px-4 relative z-10 pb-24 md:pb-8">
-        <div class="flex flex-wrap justify-center items-center gap-3 sm:gap-6 mb-6">
-            <span class="font-bold text-gray-400 uppercase tracking-widest text-[10px] mr-2">Paiements :</span>
-            <div class="px-4 py-1.5 bg-gray-800 border border-gray-700 rounded font-bold text-gray-300">D17</div>
-            <div class="px-4 py-1.5 bg-gray-800 border border-gray-700 rounded font-bold text-gray-300">USDT</div>
-            <div class="px-4 py-1.5 bg-gray-800 border border-gray-700 rounded font-bold text-gray-300">Ooredoo</div>
-            <div class="px-4 py-1.5 bg-gray-800 border border-gray-700 rounded font-bold text-gray-300">Orange</div>
-            <div class="px-4 py-1.5 bg-gray-800 border border-gray-700 rounded font-bold text-gray-300">Mandat</div>
-        </div>
+    <footer class="bg-[#121212] border-t border-gray-800 py-4 px-2 md:px-4 text-center"></footer>
 
         <div class="flex flex-wrap justify-center gap-6 mb-4 font-bold text-gray-400">
             <span class="hover:text-white cursor-pointer transition" onclick="openPolicyModal('termes')">Aide</span>
@@ -1493,13 +1485,6 @@
             function showForm(formId) {
                 document.getElementById('payment-methods-grid').classList.add('hidden');
                 document.getElementById(formId).classList.remove('hidden');
-            }
-
-            function backToMethods() {
-                document.getElementById('payment-methods-grid').classList.remove('hidden');
-                ['form-voucher', 'form-usdt', 'form-ooredoo', 'form-orange'].forEach(id => {
-                    if (document.getElementById(id)) document.getElementById(id).classList.add('hidden');
-                });
             }
 
             function updateFileName(method) {

@@ -261,8 +261,41 @@
                             class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-betCard border border-gray-700 flex justify-center items-center group-hover:bg-gray-700 transition">
                             <i class="fa-regular fa-futbol text-lg md:text-xl text-white"></i>
                         </div>
-                        
+                        <span class="text-[10px] md:text-[11px] font-bold text-white">Football</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 cursor-pointer min-w-[60px] group"
+                        onclick="openSportsbookForProvider('nexus')">
+                        <div
+                            class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-betCard border border-gray-700 flex justify-center items-center group-hover:bg-gray-700 transition">
+                            <i class="fa-solid fa-baseball-bat-ball text-lg md:text-xl text-bet-yellow"></i>
                         </div>
+                        <span class="text-[10px] md:text-[11px] font-bold text-white">Tennis</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 cursor-pointer min-w-[60px] group"
+                        onclick="openSportsbookForProvider('nexus')">
+                        <div
+                            class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-betCard border border-gray-700 flex justify-center items-center group-hover:bg-gray-700 transition">
+                            <i class="fa-solid fa-basketball text-lg md:text-xl text-orange-400"></i>
+                        </div>
+                        <span class="text-[10px] md:text-[11px] font-bold text-white">Basketball</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 cursor-pointer min-w-[60px] group"
+                        onclick="switchSection('casino'); initCasinoLobby();">
+                        <div
+                            class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-betCard border border-gray-700 flex justify-center items-center group-hover:bg-gray-700 transition">
+                            <i class="fa-solid fa-dice text-lg md:text-xl text-betGreen"></i>
+                        </div>
+                        <span class="text-[10px] md:text-[11px] font-bold text-white">Casino</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-2 cursor-pointer min-w-[60px] group"
+                        onclick="switchSection('live-casino'); openLiveCasino();">
+                        <div
+                            class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-betCard border border-gray-700 flex justify-center items-center group-hover:bg-gray-700 transition">
+                            <i class="fa-solid fa-video text-lg md:text-xl text-red-500"></i>
+                        </div>
+                        <span class="text-[10px] md:text-[11px] font-bold text-white text-center leading-tight">Live
+                            Casino</span>
+                    </div>
                     <div class="flex flex-col items-center gap-2 cursor-pointer min-w-[60px] group"
                         onclick="switchSection('virtuals'); initVirtualsLobby();">
                         <div

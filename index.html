@@ -66,6 +66,11 @@
         .b365-input:focus { border-color: #2bd999; }
         
         .hover-icon-green:hover i { color: #2bd999; }
+
+        @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
     </style>
 </head>
 
@@ -132,7 +137,7 @@
                 <span class="w-2 h-2 rounded-full bg-betGreen animate-pulse mr-1 md:mr-2"></span> Gagnants
             </div>
             <div class="flex-grow overflow-hidden flex items-center h-6 pl-20 md:pl-24">
-                <div id="winners-ticker-track" class="flex gap-4 items-center cursor-pointer whitespace-nowrap text-gray-300 text-[10px] md:text-xs" style="animation: marquee 35s linear infinite;"></div>
+                <div id="winners-ticker-track" class="flex gap-4 items-center cursor-pointer whitespace-nowrap text-gray-300 text-[10px] md:text-xs" style="animation: marquee 50s linear infinite;"></div>
             </div>
         </div>
     </header>
@@ -435,10 +440,6 @@
         </div>
     </div>
 
-    <!-- MODALS, CHAT & SCRIPTS -->
-    <div id="history-modal" class="fixed inset-0 z-[600] bg-black/80 hidden items-center justify-center p-2 md:p-4 backdrop-blur-sm">
-        <!-- ... محتوى النوافذ المنبثقة والشات ... -->
-    </div>
 
     <div id="toast-container" class="fixed top-2 md:top-5 right-2 md:right-5 z-[800] flex flex-col gap-2 w-full max-w-[280px] md:max-w-xs px-2 md:px-4"></div>
     <div id="live-chat-sidebar" class="hidden"></div>
@@ -447,7 +448,6 @@
 </body>
 </html>
 
-<!-- ================= JAVASCRIPT ================= -->
 <!-- ================= JAVASCRIPT (محرك الألفابت الشامل) ================= -->
 <script>
 

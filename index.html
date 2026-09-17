@@ -88,49 +88,49 @@
             </div>
         </div>
 
-        <div class="bg-betDark h-14 md:h-16 flex justify-between items-center px-4 md:px-8 border-b border-gray-800">
-            <div class="flex items-center gap-8">
-                <div class="text-xl md:text-2xl font-black italic tracking-tighter cursor-pointer flex items-center" onclick="switchSection('accueil')">
-                    <span class="text-white">X</span><span class="text-red-600">danous</span>
-                </div>
-                
-                <nav class="flex items-center h-full overflow-x-auto no-scrollbar whitespace-nowrap gap-1">
-    <button onclick="switchSection('accueil')" class="text-betGreen border-b-2 border-betGreen h-14 md:h-16 flex items-center px-2 md:px-3 text-xs md:text-sm font-bold bg-transparent">Sports</button>
-    <button onclick="openSportsbookForProvider('nexus')" class="text-gray-200 hover:text-white h-14 md:h-16 flex items-center px-2 md:px-3 text-xs md:text-sm font-bold transition bg-transparent">Direct</button>
-    <button onclick="switchSection('casino'); initCasinoLobby();" class="text-gray-200 hover:text-white h-14 md:h-16 flex items-center px-2 md:px-3 text-xs md:text-sm font-bold transition bg-transparent">Casino</button>
-    <button onclick="switchSection('live-casino'); openLiveCasino();" class="text-gray-200 hover:text-white h-14 md:h-16 flex items-center px-2 md:px-3 text-xs md:text-sm font-bold transition bg-transparent">Live</button>
-    <button onclick="switchSection('virtuals'); initVirtualsLobby();" class="text-gray-200 hover:text-white h-14 md:h-16 flex items-center px-2 md:px-3 text-xs md:text-sm font-bold transition bg-transparent">Virtuels</button>
-</nav>
+        <div class="bg-betDark h-14 md:h-16 flex justify-between items-center px-3 md:px-8 border-b border-gray-800 overflow-hidden w-full">
+    <div class="flex items-center gap-2 md:gap-8 min-w-0 flex-grow">
+        <div class="text-lg md:text-2xl font-black italic tracking-tighter cursor-pointer flex items-center shrink-0" onclick="switchSection('accueil')">
+            <span class="text-white">X</span><span class="text-red-600">danous</span>
+        </div>
+        
+        <nav class="flex items-center h-full overflow-x-auto no-scrollbar whitespace-nowrap gap-1 min-w-0 flex-grow">
+            <button onclick="switchSection('accueil')" class="text-betGreen border-b-2 border-betGreen h-14 md:h-16 flex items-center px-2 md:px-3 text-xs md:text-sm font-bold bg-transparent shrink-0">Sports</button>
+            <button onclick="openSportsbookForProvider('nexus')" class="text-gray-200 hover:text-white h-14 md:h-16 flex items-center px-2 md:px-3 text-xs md:text-sm font-bold transition bg-transparent shrink-0">Direct</button>
+            <button onclick="switchSection('casino'); initCasinoLobby();" class="text-gray-200 hover:text-white h-14 md:h-16 flex items-center px-2 md:px-3 text-xs md:text-sm font-bold transition bg-transparent shrink-0">Casino</button>
+            <button onclick="switchSection('live-casino'); openLiveCasino();" class="text-gray-200 hover:text-white h-14 md:h-16 flex items-center px-2 md:px-3 text-xs md:text-sm font-bold transition bg-transparent shrink-0">Live Casino</button>
+            <button onclick="switchSection('virtuals'); initVirtualsLobby();" class="text-gray-200 hover:text-white h-14 md:h-16 flex items-center px-2 md:px-3 text-xs md:text-sm font-bold transition bg-transparent shrink-0">Virtuels</button>
+        </nav>
+    </div>
+
+    <div class="flex items-center gap-2 md:gap-4 relative shrink-0">
+        <div id="auth-buttons-container" class="flex items-center gap-2">
+            <button onclick="openLoginModal()" class="text-white hover:text-gray-200 text-xs md:text-sm font-bold py-1.5 px-2 transition">Se connecter</button>
+        </div>
+
+        <div id="top-user-profile" class="hidden items-center gap-2 md:gap-4">
+            <div class="flex flex-col text-right cursor-pointer group" onclick="toggleProfileSidebar()">
+                <span class="text-white font-bold text-xs md:text-sm leading-tight group-hover:text-bet-yellow transition"><span id="player-balance-val">0.00</span> TND</span>
+                <span class="text-[9px] md:text-[10px] text-betGreen uppercase tracking-widest flex items-center gap-1 justify-end">Solde</span>
             </div>
-
-            <div class="flex items-center gap-3 md:gap-4 relative">
-                <div id="auth-buttons-container" class="flex items-center gap-3">
-                    <button onclick="openLoginModal()" class="text-white hover:text-gray-200 text-xs md:text-sm font-bold py-1.5 px-2 transition">Se connecter</button>
-                </div>
-
-                <div id="top-user-profile" class="hidden items-center gap-3 md:gap-4">
-                    <div class="flex flex-col text-right cursor-pointer group" onclick="toggleProfileSidebar()">
-                        <span class="text-white font-bold text-xs md:text-sm leading-tight group-hover:text-bet-yellow transition"><span id="player-balance-val">0.00</span> TND</span>
-                        <span class="text-[9px] md:text-[10px] text-betGreen uppercase tracking-widest flex items-center gap-1 justify-end">Solde</span>
-                    </div>
-                    <div class="w-7 h-7 md:w-8 md:h-8 bg-gray-800 rounded-full flex items-center justify-center text-white cursor-pointer border border-gray-600 hover:bg-gray-700 transition" onclick="toggleProfileSidebar()">
-                        <i class="fas fa-user text-[10px] md:text-xs"></i>
-                    </div>
-                </div>
-
-                <div id="top-notification-bell" class="hidden relative cursor-pointer items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full bg-gray-800 border border-gray-600 hover:text-white transition shrink-0" onclick="toggleNotificationsPanel()">
-                    <i class="fas fa-bell text-gray-200 text-[10px] md:text-xs"></i>
-                    <span id="notif-badge" class="absolute -top-1 -right-1 bg-red-600 text-white text-[8px] md:text-[9px] font-bold px-1.5 py-0.5 rounded-full hidden leading-none shadow-md">0</span>
-                </div>
-
-                <div id="notifications-panel" class="absolute top-12 md:top-14 right-0 md:right-2 w-[280px] md:w-80 bg-betCard border border-gray-700 rounded-sm shadow-2xl hidden flex-col z-[100] overflow-hidden">
-                    <div class="p-3 border-b border-gray-700 bg-betMain flex justify-between items-center">
-                        <h3 class="text-white font-bold text-sm">Notifications 🔔</h3>
-                    </div>
-                    <div id="notifs-list" class="max-h-[300px] overflow-y-auto no-scrollbar p-2 flex flex-col gap-1"></div>
-                </div>
+            <div class="w-7 h-7 md:w-8 md:h-8 bg-gray-800 rounded-full flex items-center justify-center text-white cursor-pointer border border-gray-600 hover:bg-gray-700 transition" onclick="toggleProfileSidebar()">
+                <i class="fas fa-user text-[10px] md:text-xs"></i>
             </div>
         </div>
+
+        <div id="top-notification-bell" class="hidden relative cursor-pointer items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full bg-gray-800 border border-gray-600 hover:text-white transition shrink-0" onclick="toggleNotificationsPanel()">
+            <i class="fas fa-bell text-gray-200 text-[10px] md:text-xs"></i>
+            <span id="notif-badge" class="absolute -top-1 -right-1 bg-red-600 text-white text-[8px] md:text-[9px] font-bold px-1.5 py-0.5 rounded-full hidden leading-none shadow-md">0</span>
+        </div>
+
+        <div id="notifications-panel" class="absolute top-12 md:top-14 right-0 md:right-2 w-[280px] md:w-80 bg-betCard border border-gray-700 rounded-sm shadow-2xl hidden flex-col z-[100] overflow-hidden">
+            <div class="p-3 border-b border-gray-700 bg-betMain flex justify-between items-center">
+                <h3 class="text-white font-bold text-sm">Notifications 🔔</h3>
+            </div>
+            <div id="notifs-list" class="max-h-[300px] overflow-y-auto no-scrollbar p-2 flex flex-col gap-1"></div>
+        </div>
+    </div>
+</div>
 
         <div class="w-full bg-betMain py-1.5 overflow-hidden relative flex items-center text-xs border-b border-gray-800">
             <div class="absolute left-0 top-0 bottom-0 z-20 bg-betMain px-3 flex items-center font-bold text-white shadow-[2px_0_5px_rgba(0,0,0,0.5)] text-[10px] md:text-xs">

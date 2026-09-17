@@ -94,13 +94,13 @@
                     <span class="text-white">X</span><span class="text-red-600">danous</span>
                 </div>
                 
-                <nav class="hidden md:flex items-center h-full">
-                    <button onclick="switchSection('accueil')" class="text-betGreen border-b-2 border-betGreen h-16 flex items-center px-3 text-sm font-bold bg-transparent">Tous les Sports</button>
-                    <button onclick="openSportsbookForProvider('nexus')" class="text-gray-200 hover:text-white h-16 flex items-center px-3 text-sm font-bold transition bg-transparent">En direct</button>
-                    <button onclick="switchSection('casino'); initCasinoLobby();" class="text-gray-200 hover:text-white h-16 flex items-center px-3 text-sm font-bold transition bg-transparent">Casino</button>
-                    <button onclick="switchSection('live-casino'); openLiveCasino();" class="text-gray-200 hover:text-white h-16 flex items-center px-3 text-sm font-bold transition bg-transparent">Live Casino</button>
-                    <button onclick="switchSection('virtuals'); initVirtualsLobby();" class="text-gray-200 hover:text-white h-16 flex items-center px-3 text-sm font-bold transition bg-transparent">Virtuels</button>
-                </nav>
+                <nav class="flex items-center h-full overflow-x-auto no-scrollbar whitespace-nowrap gap-1">
+    <button onclick="switchSection('accueil')" class="text-betGreen border-b-2 border-betGreen h-14 md:h-16 flex items-center px-2 md:px-3 text-xs md:text-sm font-bold bg-transparent">Sports</button>
+    <button onclick="openSportsbookForProvider('nexus')" class="text-gray-200 hover:text-white h-14 md:h-16 flex items-center px-2 md:px-3 text-xs md:text-sm font-bold transition bg-transparent">Direct</button>
+    <button onclick="switchSection('casino'); initCasinoLobby();" class="text-gray-200 hover:text-white h-14 md:h-16 flex items-center px-2 md:px-3 text-xs md:text-sm font-bold transition bg-transparent">Casino</button>
+    <button onclick="switchSection('live-casino'); openLiveCasino();" class="text-gray-200 hover:text-white h-14 md:h-16 flex items-center px-2 md:px-3 text-xs md:text-sm font-bold transition bg-transparent">Live</button>
+    <button onclick="switchSection('virtuals'); initVirtualsLobby();" class="text-gray-200 hover:text-white h-14 md:h-16 flex items-center px-2 md:px-3 text-xs md:text-sm font-bold transition bg-transparent">Virtuels</button>
+</nav>
             </div>
 
             <div class="flex items-center gap-3 md:gap-4 relative">

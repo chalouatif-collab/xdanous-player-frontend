@@ -1366,6 +1366,7 @@
     } else if (typeof displayGames === "function") {
         displayGames(allLiveGames, "live-games-grid");
     } else {
+        // عرض افتراضي إذا لم توجد دالة عرض محددة
         grid.innerHTML = allLiveGames.map(game => {
     // استخراج البيانات مهما كان المسمى القادم من المزود
     const imageUrl = game.banner || game.thumb || game.image || game.img || game.logo || '';
@@ -1380,6 +1381,8 @@
         </div>
     `;
 }).join('');
+}
+}
 
             async function initVirtualsLobby() {
                 const grid = document.getElementById('virtuals-games-grid');

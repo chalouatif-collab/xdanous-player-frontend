@@ -258,23 +258,22 @@
             }
         }
 
-        // ================= دالة التلوين السحرية (DataBet Style) =================
         function setActiveMenuBtn(activeBtnId) {
-            // 1. إعادة كل الأزرار للحالة الباهتة (بدون خط سفلي)
-            document.querySelectorAll('.main-nav-btn').forEach(btn => {
-                btn.className = "main-nav-btn flex items-center justify-center gap-2 h-full px-4 text-gray-400 hover:text-gray-200 border-b-[3px] border-transparent transition-all shrink-0";
-            });
+    // 1. إعادة كل الأزرار للحالة الطبيعية غير النشطة (نص رمادي وإطار رمادي داكن)
+    document.querySelectorAll('.main-nav-btn').forEach(btn => {
+        btn.className = "main-nav-btn flex items-center justify-center gap-2 px-4 py-1.5 md:py-2 text-gray-400 hover:text-white border border-gray-700 bg-transparent rounded-full transition-all shrink-0 text-xs md:text-sm font-bold";
+    });
 
-            // 2. تلوين الزر النشط باللون الفوسفوري مع الخط السفلي والتوهج
-            const activeBtn = document.getElementById(activeBtnId);
-            if (activeBtn) {
-                activeBtn.className = "main-nav-btn flex items-center justify-center gap-2 h-full px-4 text-neonGreen border-b-[3px] border-neonGreen bg-gradient-to-t from-neonGreen/10 to-transparent transition-all shrink-0";
-                
-                // تمرير ذكي: يجعل الزر النشط في منتصف الشاشة (ممتاز للهواتف)
-                activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            }
-        }
-
+    // 2. تلوين الزر النشط باللون الأخضر الفوسفوري (Neon Green)
+    const activeBtn = document.getElementById(activeBtnId);
+    if (activeBtn) {
+        // إضافة الإطار الفوسفوري، النص الفوسفوري، وخلفية شفافة جداً من نفس اللون مع توهج خفيف
+        activeBtn.className = "main-nav-btn flex items-center justify-center gap-2 px-4 py-1.5 md:py-2 text-[#00ff87] border border-[#00ff87] bg-[#00ff87]/10 rounded-full transition-all shrink-0 text-xs md:text-sm font-bold shadow-[0_0_10px_rgba(0,255,135,0.15)]";
+        
+        // تمرير ذكي ليصبح الزر النشط في منتصف الشاشة (مفيد جداً للهواتف)
+        activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+}
         // ================= النوافذ الجانبية =================
         function toggleProfileSidebar() {
             const sidebar = document.getElementById('profile-sidebar');

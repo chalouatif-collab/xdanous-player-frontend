@@ -588,8 +588,7 @@
         // 2. استرجاع القسم الذي كان فيه اللاعب قبل الريفرش
         const savedSection = localStorage.getItem('active_section') || 'accueil';
         switchSection(savedSection);
-        // 3. تشغيل ميزات الصفحة الرئيسية
-        startLiveJackpots();
+        
 
         // 🌟 4. السحر هنا: تشغيل محرك شريط الفائزين! 🌟
         if (typeof generateLiveWinnersTicker === 'function')
@@ -608,36 +607,8 @@
             initGlobalGameCache();
         });
     };
-    // دالة الـ WebSocket المحدثة
-    function startLiveJackpots() {
-        const wsUrl = BACKEND_URL.replace("http", "ws").replace("https", "wss") + "/ws/jackpot";
-        const socket = new WebSocket(wsUrl);
-
-        socket.onmessage = function (event) {
-            const data = JSON.parse(event.data);
-
-            // 🌟 التقاط إشعار سقوط الجاكبوت الاستثنائي
-            if (data.type === 'jackpot_drop') {
-                announceJackpotDrop(data);
-                return; // نوقف التنفيذ هنا كي لا يقرأه كأرقام عادية
-            }
-
-            // التحديث العادي للأرقام
-            const elMini = document.getElementById('jackpot-mini');
-            const elMinor = document.getElementById('jackpot-minor');
-            const elMajor = document.getElementById('jackpot-major');
-            const elGrand = document.getElementById('jackpot-grand');
-
-            if (elMini && data.mini !== undefined) elMini.innerText = parseFloat(data.mini).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TND';
-            if (elMinor && data.minor !== undefined) elMinor.innerText = parseFloat(data.minor).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TND';
-            if (elMajor && data.major !== undefined) elMajor.innerText = parseFloat(data.major).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TND';
-            if (elGrand && data.grand !== undefined) elGrand.innerText = parseFloat(data.grand).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TND';
-        };
-
-        socket.onerror = function (error) { console.error("Jackpot WS Error:", error); };
-        socket.onclose = function () { setTimeout(startLiveJackpots, 5000); };
-    }
-
+    
+            
     // 🌟 دالة رسم الإشعار الذهبي في التيكر
     function announceJackpotDrop(data) {
         const track = document.getElementById('winners-ticker-track');

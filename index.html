@@ -673,17 +673,32 @@
         });
     };
 
-    // ================= 2. محرك الجلب المركزي (EuroVirtuals) =================
+    // ================= 2. محرك الجلب المركزي (EuroVirtuals) المحصن =================
     async function fetchAllEVGames() {
-        if (window.allEVGamesCache.length > 0) return window.allEVGamesCache;
+        if (window.allEVGamesCache && window.allEVGamesCache.length > 0) return window.allEVGamesCache;
         try {
             const res = await fetch(`${BACKEND_URL}/api/get-eurovirtuals-games`);
             const data = await res.json();
-            window.allEVGamesCache = data.games || data.data || data || [];
+            
+            // البحث الذكي عن المصفوفة داخل رد السيرفر مهما كان شكله
+            let gamesArray = [];
+            
+            if (Array.isArray(data)) {
+                gamesArray = data; // إذا كان السيرفر يرسل مصفوفة مباشرة
+            } else if (data && Array.isArray(data.games)) {
+                gamesArray = data.games; // إذا كانت الألعاب داخل كائن "games"
+            } else if (data && Array.isArray(data.data)) {
+                gamesArray = data.data; // إذا كانت الألعاب داخل كائن "data"
+            } else {
+                console.warn("تنبيه: شكل البيانات القادم من السيرفر غير متوقع", data);
+            }
+
+            window.allEVGamesCache = gamesArray;
             return window.allEVGamesCache;
+            
         } catch (e) {
             console.error("Erreur chargement EV:", e);
-            return [];
+            return []; // إرجاع مصفوفة فارغة دائماً عند الفشل لتجنب خطأ .filter()
         }
     }
 

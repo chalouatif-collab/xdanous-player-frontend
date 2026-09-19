@@ -1034,71 +1034,96 @@
         const grid = document.getElementById('games-of-the-day-grid');
         if (!grid) return;
 
-        grid.innerHTML = '<div class="col-span-full text-emerald text-center py-5 animate-pulse font-bold text-xs">Chargement de la sélection du jour... ⚡</div>';
+        // إظهار أيقونة التحميل بالتصميم الفوسفوري الجديد
+        grid.innerHTML = '<div class="col-span-full py-10 text-center"><i class="fas fa-circle-notch fa-spin text-[#00ff87] text-2xl mb-3"></i><p class="text-gray-500 text-xs font-bold uppercase tracking-widest">Chargement des jeux...</p></div>';
 
         try {
-            const selectedProviders = ['PRAGMATIC', 'HACKSAW', 'PLAYNGO'];
+            // توسيع قائمة المزودين لضمان تنوع أكبر
+            const selectedProviders = ['PRAGMATIC', 'HACKSAW', 'PLAYNGO', 'SPRIBE', 'EVOPLAY'];
             let mixedGames = [];
+            let seenGameCodes = new Set(); // فلتر ذكي لضمان عدم تكرار أي لعبة
 
-            for (let pCode of selectedProviders) {
-                try {
-                    const res = await fetch(`${BACKEND_URL}/api/get-providers`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ provider_code: pCode })
-                    });
+            // جلب البيانات من كل المزودين في نفس الوقت (لتسريع ظهور الواجهة)
+            const fetchPromises = selectedProviders.map(pCode => 
+                fetch(`${BACKEND_URL}/api/get-providers`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ provider_code: pCode })
+                }).then(res => res.json()).then(data => ({ pCode, data })).catch(() => null)
+            );
 
-                    if (res.ok) {
-                        const data = await res.json();
+            const results = await Promise.all(fetchPromises);
 
-                        // قراءة البيانات بذكاء لتعمل مع الـ API الخاص بك
-                        let games = [];
-                        if (data.status === 1 && data.games) games = data.games;
-                        else if (data.data) games = data.data;
-                        else if (Array.isArray(data)) games = data;
+            // تجميع الألعاب
+            results.forEach(result => {
+                if (!result) return;
+                const { pCode, data } = result;
+                
+                let games = [];
+                if (data.status === 1 && data.games) games = data.games;
+                else if (data.data) games = data.data;
+                else if (Array.isArray(data)) games = data;
 
-                        if (games && games.length > 0) {
-                            games.slice(0, 4).forEach(g => mixedGames.push({ ...g, provider: pCode }));
+                if (games && games.length > 0) {
+                    // خلط ألعاب المزود عشوائياً قبل الاختيار
+                    games = games.sort(() => 0.5 - Math.random());
+                    
+                    let addedCount = 0;
+                    for (let g of games) {
+                        const code = g.game_code || g.id || g.uuid;
+                        // التأكد من أن اللعبة لم تضف مسبقاً
+                        if (!seenGameCodes.has(code)) {
+                            seenGameCodes.add(code);
+                            mixedGames.push({ ...g, provider: pCode });
+                            addedCount++;
                         }
+                        // نأخذ لعبتين مختلفتين فقط من كل مزود لإجبار الواجهة على التنوع
+                        if (addedCount >= 2) break; 
                     }
-                } catch (err) {
-                    console.warn(`Impossible de charger le fournisseur: ${pCode}`, err);
                 }
-            }
+            });
 
+            // خلط التشكيلة النهائية مرة أخرى لتبدو طبيعية
             mixedGames = mixedGames.sort(() => 0.5 - Math.random());
+
+            // عرض 10 ألعاب كحد أقصى (صفين في الشاشات الكبيرة)
+            mixedGames = mixedGames.slice(0, 10);
 
             if (mixedGames.length > 0) {
                 grid.innerHTML = mixedGames.map(g => {
                     const rawName = String(g.game_name || g.name || "Game");
-                    const title = rawName.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
-
-                    const img = g.banner || g.image || g.thumb || `https://placehold.co/400x400/180A2B/10b981?text=${encodeURIComponent(title.substring(0, 15))}`;
-                    const code = g.game_code || g.id;
+                    const title = escapeHTML(rawName);
+                    // استخدام مكان احتياطي يحمل نفس التصميم الداكن
+                    const img = g.banner || g.image || g.thumb || `https://placehold.co/400x400/121212/00ff87?text=${encodeURIComponent(title.substring(0, 15))}`;
+                    const code = g.game_code || g.id || g.uuid;
                     const pCode = g.provider;
 
                     return `
-                <div onclick="playCasinoGame('${pCode}', '${code}')" class="bg-[#0f1117] border border-[#212631] rounded-xl overflow-hidden cursor-pointer hover:border-emerald transition-all flex flex-col group shadow-lg relative">
-                    <div class="relative w-full aspect-square overflow-hidden bg-[#161922]">
-                        <div class="absolute top-0 right-0 bg-black/80 text-emerald text-[8px] font-black px-2 py-1 rounded-bl-lg z-20 border-b border-l border-[#212631]">
-                            ${pCode}
+                    <div onclick="playCasinoGame('${pCode}', '${code}')" class="bg-[#1a1c23] border border-gray-800 rounded-xl overflow-hidden cursor-pointer hover:border-[#00ff87] transition-all flex flex-col group shadow-lg relative hover:-translate-y-1">
+                        <div class="relative w-full aspect-square overflow-hidden bg-[#121212]">
+                            <div class="absolute top-0 right-0 bg-black/80 text-gray-400 text-[8px] font-black px-2 py-1 rounded-bl-lg z-20 border-b border-l border-gray-800">
+                                ${pCode}
+                            </div>
+                            <img src="${img}" alt="${title}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/400x400/121212/00ff87?text=Jeu';">
+                            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 z-10">
+                                <span class="bg-[#00ff87] text-black text-[10px] font-bold px-4 py-2 rounded-full shadow-[0_0_15px_rgba(0,255,135,0.4)]">JOUER</span>
+                            </div>
                         </div>
-                        <img src="${img}" alt="${title}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/400x400/180A2B/10b981?text=${encodeURIComponent(title.substring(0, 15))}';">
-                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 z-10">
-                            <span class="bg-emerald text-black text-[10px] font-bold px-4 py-2 rounded-full shadow-lg">JOUER</span>
-                        </div>
-                    </div>
-                    <div class="p-2 text-[10px] text-white font-bold truncate text-center">${title}</div>
-                </div>`;
+                        <div class="p-2.5 text-[10px] md:text-xs text-white font-bold truncate text-center">${title}</div>
+                    </div>`;
                 }).join('');
             } else {
-                grid.innerHTML = '<div class="col-span-full text-gray-500 text-center py-5 font-bold">Aucun jeu disponible pour le moment.</div>';
+                grid.innerHTML = '<div class="col-span-full text-gray-500 text-center py-10 font-bold text-xs uppercase tracking-widest">Aucun jeu disponible pour le moment.</div>';
             }
         } catch (e) {
             console.error("=== خطأ ألعاب اليوم ===", e);
-            grid.innerHTML = `<div class="col-span-full text-red-500 text-center py-5 font-bold">Erreur de chargement<br><span class="text-xs text-gray-500 font-mono mt-2 block">${e.message}</span></div>`;
+            grid.innerHTML = `<div class="col-span-full text-red-500 text-center py-10 font-bold text-xs">Erreur de chargement de la sélection</div>`;
         }
-        loadFeaturedProvidersBlocks();
+        
+        // متابعة تحميل باقي الأقسام إن وجدت
+        if (typeof loadFeaturedProvidersBlocks === 'function') {
+            loadFeaturedProvidersBlocks();
+        }
     }
     // ================= تشغيل الألعاب في تبويب جديد (نافذة مستقلة) =================
     async function playCasinoGame(providerCode, gameCode) {

@@ -932,6 +932,21 @@
     let currentActiveProviderCode = "PRAGMATIC";
     let gamesObserver = null;
 
+    // ================= 1. محرك الذاكرة الشامل لألعاب EuroVirtuals =================
+    window.allEVGamesCache = []; 
+
+    async function fetchAllEVGames() {
+        if (window.allEVGamesCache.length > 0) return window.allEVGamesCache;
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/get-eurovirtuals-games`);
+            const data = await res.json();
+            window.allEVGamesCache = data.games || data.data || data || [];
+            return window.allEVGamesCache;
+        } catch (e) {
+            console.error("Erreur chargement EV:", e);
+            return [];
+        }
+    }
     // ================= 2. قسم الكازينو (السلوتس فقط) =================
     async function initCasinoLobby() {
         const grid = document.getElementById('games-grid');

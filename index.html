@@ -844,7 +844,7 @@
                     localStorage.setItem('alpha_player_session', JSON.stringify(playerSession));
 
                     setupLoggedInUI(); 
-                    showNotification("Connexion réussie !", "success");
+                    
                 } else {
                     showNotification(data.detail || "Identifiants incorrects", "error");
                 }
@@ -2931,6 +2931,8 @@
         </div>
     </div>
 </div>
+<!-- حاوية الإشعارات العصرية -->
+<div id="toast-container" class="fixed top-5 right-5 z-[1000] flex flex-col gap-2 w-full max-w-[280px] md:max-w-xs px-4 pointer-events-none"></div>
 </body>
 
 </html>

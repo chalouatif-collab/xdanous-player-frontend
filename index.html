@@ -416,7 +416,7 @@
         </div>
     </div>
 
-    <!-- نافذة تسجيل الدخول (بسيطة وأنيقة) -->
+    <!-- نافذة تسجيل الدخول (بسيطة وأنيقة ومربوطة برمجياً) -->
     <div id="player-login-modal" class="fixed inset-0 z-[700] bg-black/80 hidden items-center justify-center p-4 backdrop-blur-sm">
         <div class="w-full max-w-sm bg-[#1a1c23] border border-gray-700 rounded-xl p-6 relative shadow-2xl">
             <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition bg-gray-800 w-8 h-8 rounded-full"><i class="fas fa-times text-sm"></i></button>
@@ -424,13 +424,18 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-gray-400 text-[10px] font-bold mb-1 ml-1 uppercase">Identifiant</label>
-                    <input type="text" placeholder="Votre nom d'utilisateur" class="b365-input text-sm font-bold">
+                    <!-- تمت إعادة إدراج id="p-auth-username" -->
+                    <input type="text" id="p-auth-username" placeholder="Votre nom d'utilisateur" class="b365-input text-sm font-bold">
                 </div>
                 <div>
                     <label class="block text-gray-400 text-[10px] font-bold mb-1 ml-1 uppercase">Mot de passe</label>
-                    <input type="password" placeholder="Votre mot de passe" class="b365-input text-sm font-bold">
+                    <!-- تمت إعادة إدراج id="p-auth-password" -->
+                    <input type="password" id="p-auth-password" placeholder="Votre mot de passe" class="b365-input text-sm font-bold">
                 </div>
-                <button class="w-full bg-neonGreen text-black hover:bg-[#00cc6a] font-black py-3 mt-2 rounded transition uppercase tracking-wide text-sm shadow-[0_0_15px_rgba(0,255,135,0.3)]">Entrer</button>
+                <!-- تمت إضافة دالة onclick="handlePlayerAuth()" -->
+                <button onclick="handlePlayerAuth()" class="w-full bg-neonGreen text-black hover:bg-[#00cc6a] font-black py-3 mt-2 rounded transition uppercase tracking-wide text-sm shadow-[0_0_15px_rgba(0,255,135,0.3)]">
+                    Entrer
+                </button>
             </div>
         </div>
     </div>

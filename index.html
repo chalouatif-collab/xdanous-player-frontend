@@ -601,6 +601,7 @@
 
 
     //-------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     window.onload = () => {
         // 1. استرجاع بيانات اللاعب إذا كان مسجلاً
         const savedSession = localStorage.getItem('alpha_player_session');
@@ -613,10 +614,16 @@
         const savedSection = localStorage.getItem('active_section') || 'accueil';
         switchSection(savedSection);
         
+        // 3. 🌟 تشغيل محرك ألعاب اليوم فور فتح الموقع (هذا السطر الذي كان مفقوداً!) 🌟
+        if (typeof loadGamesOfTheDay === 'function') {
+            loadGamesOfTheDay();
+        }
 
-        // 🌟 4. السحر هنا: تشغيل محرك شريط الفائزين! 🌟
-        if (typeof generateLiveWinnersTicker === 'function')
+        // 4. تشغيل محرك شريط الفائزين
+        if (typeof generateLiveWinnersTicker === 'function') {
             generateLiveWinnersTicker();
+        }
+
         window.addEventListener('popstate', (event) => {
             const container = document.getElementById('casino-iframe-container');
 

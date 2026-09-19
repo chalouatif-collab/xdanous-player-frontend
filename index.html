@@ -673,35 +673,83 @@
         });
     };
 
-    // ================= 2. محرك الجلب المركزي (EuroVirtuals) المحصن =================
-    async function fetchAllEVGames() {
-        if (window.allEVGamesCache && window.allEVGamesCache.length > 0) return window.allEVGamesCache;
-        try {
-            const res = await fetch(`${BACKEND_URL}/api/get-eurovirtuals-games`);
-            const data = await res.json();
-            
-            // البحث الذكي عن المصفوفة داخل رد السيرفر مهما كان شكله
-            let gamesArray = [];
-            
-            if (Array.isArray(data)) {
-                gamesArray = data; // إذا كان السيرفر يرسل مصفوفة مباشرة
-            } else if (data && Array.isArray(data.games)) {
-                gamesArray = data.games; // إذا كانت الألعاب داخل كائن "games"
-            } else if (data && Array.isArray(data.data)) {
-                gamesArray = data.data; // إذا كانت الألعاب داخل كائن "data"
-            } else {
-                console.warn("تنبيه: شكل البيانات القادم من السيرفر غير متوقع", data);
-            }
+    // ================= 2. محرك الجلب المركزي (الذكي والمحمي من الحظر) =================
+    window.allEVGamesCache = [];
+    window.fetchPromise = null; // قفل لمنع الطلبات المتزامنة (يحل مشكلة Rate Limit)
 
-            window.allEVGamesCache = gamesArray;
+    async function fetchAllEVGames() {
+        // 1. إذا كانت الألعاب جاهزة في المتغير، أرجعها فوراً
+        if (window.allEVGamesCache.length > 0) return window.allEVGamesCache;
+
+        // 2. إذا كانت الألعاب محفوظة في ذاكرة المتصفح (لتجنب حظر السيرفر)، استخدمها
+        const cachedData = localStorage.getItem('ev_games_cache_v1');
+        if (cachedData) {
+            window.allEVGamesCache = JSON.parse(cachedData);
+            // تحديث صامت في الخلفية لضمان وجود ألعاب جديدة
+            if (!window.fetchPromise) window.fetchPromise = fetchGamesFromServerSilent();
             return window.allEVGamesCache;
-            
-        } catch (e) {
-            console.error("Erreur chargement EV:", e);
-            return []; // إرجاع مصفوفة فارغة دائماً عند الفشل لتجنب خطأ .filter()
         }
+
+        // 3. إذا لم يكن هناك شيء، اجلبها من السيرفر لأول مرة
+        if (!window.fetchPromise) {
+            window.fetchPromise = fetchGamesFromServerSilent();
+        }
+        return await window.fetchPromise;
     }
 
+    // دالة تجلب الألعاب من المزودين المعتمدين وتدمجها بهدوء
+    async function fetchGamesFromServerSilent() {
+        try {
+            // نستخدم أشهر مزودي إيفرتيال المضمونين لملء المنصة
+            const topProviders = ['PRAGMATIC', 'HACKSAW', 'SPRIBE', 'EVO_LIVE', 'PLAYNGO', 'NETENT'];
+            let combinedGames = [];
+
+            // إرسال الطلبات للباك إند بناءً على الرابط المضمون get-providers
+            const fetchPromises = topProviders.map(pCode =>
+                fetch(`${BACKEND_URL}/api/get-providers`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ provider_code: pCode })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    let games = Array.isArray(data) ? data : (data.games || data.data || []);
+                    // إضافة اسم المزود لكل لعبة ليعمل الفلتر بشكل صحيح
+                    return games.map(g => ({...g, provider: pCode}));
+                })
+                .catch(() => []) // في حال فشل مزود معين، لا نعطل البقية
+            );
+
+            const results = await Promise.all(fetchPromises);
+            
+            results.forEach(gamesArray => {
+                if (gamesArray && gamesArray.length > 0) {
+                    combinedGames = combinedGames.concat(gamesArray);
+                }
+            });
+
+            if (combinedGames.length > 0) {
+                window.allEVGamesCache = combinedGames;
+                // حفظ البيانات في المتصفح لتفتح في 0 ثانية في المرة القادمة!
+                localStorage.setItem('ev_games_cache_v1', JSON.stringify(combinedGames));
+            }
+            
+            return window.allEVGamesCache;
+        } catch (e) {
+            console.error("Erreur Fetch:", e);
+            return window.allEVGamesCache;
+        } finally {
+            window.fetchPromise = null; // فتح القفل
+            
+            // إعادة رسم الواجهات بعد وصول البيانات الصامتة
+            if(document.getElementById('games-grid') && document.getElementById('games-grid').innerHTML.includes('fa-spin')) {
+                if (typeof filterGames === 'function') filterGames();
+            }
+            if(document.getElementById('games-of-the-day-grid') && document.getElementById('games-of-the-day-grid').innerHTML.includes('fa-spin')) {
+                if (typeof loadGamesOfTheDay === 'function') loadGamesOfTheDay();
+            }
+        }
+    }
     // ================= 3. واجهة ألعاب اليوم (الرئيسية) =================
     async function loadGamesOfTheDay() {
         const grid = document.getElementById('games-of-the-day-grid');

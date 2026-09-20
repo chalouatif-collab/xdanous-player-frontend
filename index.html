@@ -677,15 +677,19 @@
         });
     };
 
-    // ================= 2. محرك الجلب المركزي (الذكي والمحمي) =================
-    // هذا المحرك يستخدم الرابط المضمون get-providers فقط ويتجاهل الرابط المعطل
+    // ================= 2. محرك الجلب المركزي (الذاكرة التراكمية الذكية) =================
     async function fetchAllEVGames() {
         if (window.allEVGamesCache.length > 0) return window.allEVGamesCache;
 
-        const cachedData = localStorage.getItem('ev_games_cache_v3');
+        const cachedData = localStorage.getItem('ev_games_cache_v6');
         if (cachedData) {
             window.allEVGamesCache = JSON.parse(cachedData);
-            if (!window.fetchPromise) window.fetchPromise = fetchGamesFromServerSilent();
+            
+            // 💡 التعديل الذكي: لا نشغل الجلب في الخلفية إلا إذا كان هناك مزودين ناقصين
+            const loadedProviders = [...new Set(window.allEVGamesCache.map(g => g.provider))];
+            if (loadedProviders.length < 25 && !window.fetchPromise) {
+                window.fetchPromise = fetchGamesFromServerSilent();
+            }
             return window.allEVGamesCache;
         }
 
@@ -704,36 +708,53 @@
                 'ENDORPHINA', 'NOLIMIT', 'REDTIGER', 'RELAX', 'PUSHGAMING', 'PLATIPUS', 'EZUGI'
             ];
             
-            let combinedGames = [];
-
-            // 🌟 إرسال الطلبات بالترتيب (واحد تلو الآخر) لحماية السيرفر من الانهيار 🌟
-            for (let pCode of topProviders) {
-                try {
-                    const res = await fetch(`${BACKEND_URL}/api/get-providers`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ provider_code: pCode })
-                    });
-                    
-                    if (res.ok) {
-                        const data = await res.json();
-                        let games = Array.isArray(data) ? data : (data.games || data.data || []);
-                        if (games.length > 0) {
-                            combinedGames = combinedGames.concat(games.map(g => ({...g, provider: pCode})));
-                        }
-                    }
-                } catch (e) {
-                    console.warn(`تجاوز المزود ${pCode} مؤقتاً لتجنب ضغط السيرفر`);
-                }
-                
-                // إعطاء السيرفر استراحة 200 ملي ثانية قبل طلب المزود التالي
-                await new Promise(resolve => setTimeout(resolve, 200));
+            // 1. استرجاع الألعاب المحفوظة مسبقاً لعدم مسحها
+            let existingCache = [];
+            const saved = localStorage.getItem('ev_games_cache_v6');
+            if (saved) {
+                existingCache = JSON.parse(saved);
             }
 
-            if (combinedGames.length > 0) {
-                window.allEVGamesCache = combinedGames;
-                // تغيير رقم الذاكرة إلى v5 ليقوم المتصفح بمسح القديم وجلب كل الشركات
-                localStorage.setItem('ev_games_cache_v5', JSON.stringify(combinedGames)); 
+            // 2. فلترة المزودين: استخراج أسماء المزودين الذين جلبناهم سابقاً
+            const loadedProviders = [...new Set(existingCache.map(g => g.provider))];
+            
+            // 3. تحديد المزودين الناقصين فقط لطلبهم من السيرفر
+            const providersToFetch = topProviders.filter(p => !loadedProviders.includes(p));
+
+            let newGames = [];
+
+            // 4. جلب المزودين الناقصين واحداً تلو الآخر
+            if (providersToFetch.length > 0) {
+                for (let pCode of providersToFetch) {
+                    try {
+                        const res = await fetch(`${BACKEND_URL}/api/get-providers`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ provider_code: pCode })
+                        });
+                        
+                        if (res.ok) {
+                            const data = await res.json();
+                            let games = Array.isArray(data) ? data : (data.games || data.data || []);
+                            if (games.length > 0) {
+                                newGames = newGames.concat(games.map(g => ({...g, provider: pCode})));
+                            }
+                        }
+                    } catch (e) {
+                        console.warn(`تجاوز المزود ${pCode} مؤقتاً لتجنب الضغط`);
+                    }
+                    // إعطاء السيرفر استراحة 300 ملي ثانية (أطول قليلاً لضمان عدم الحظر)
+                    await new Promise(resolve => setTimeout(resolve, 300)); 
+                }
+            }
+
+            // 5. دمج الألعاب القديمة مع الجديدة (بدون مسح أي شيء)
+            if (newGames.length > 0) {
+                const finalGames = existingCache.concat(newGames);
+                window.allEVGamesCache = finalGames;
+                localStorage.setItem('ev_games_cache_v6', JSON.stringify(finalGames));
+            } else {
+                window.allEVGamesCache = existingCache;
             }
             
             return window.allEVGamesCache;
@@ -742,7 +763,7 @@
             return window.allEVGamesCache;
         } finally {
             window.fetchPromise = null;
-            // تحديث الواجهات المعلقة فور اكتمال الجلب
+            // تحديث الواجهات المعلقة
             if (document.getElementById('games-grid')?.innerHTML.includes('fa-spin')) initCasinoLobby();
             if (document.getElementById('live-games-grid')?.innerHTML.includes('fa-spin')) openLiveCasino();
             if (document.getElementById('games-of-the-day-grid')?.innerHTML.includes('fa-spin')) loadGamesOfTheDay();

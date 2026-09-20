@@ -697,8 +697,14 @@
 
     async function fetchGamesFromServerSilent() {
         try {
-            // أشهر مزودي الألعاب الذين سنطلبهم من الباك إند
-            const topProviders = ['PRAGMATIC', 'HACKSAW', 'SPRIBE', 'PLAYNGO', 'EVOLUTION', 'EVO_LIVE', 'NETENT', 'SMARTSOFT'];
+            // 🌟 توسيع قائمة المزودين لتشمل أقوى الشركات المتاحة في نظامك 🌟
+            const topProviders = [
+                'PRAGMATIC', 'HACKSAW', 'SPRIBE', 'PLAYNGO', 'EVOLUTION', 'EVO_LIVE', 
+                'NETENT', 'SMARTSOFT', 'AMUSNET', 'EGT', 'EVOPLAY', 'PGSOFT', 
+                'WAZDAN', 'QUICKSPIN', 'YGGDRASIL', 'PLAYTECH', 'BGAMING', 'BETSOFT', 
+                'ENDORPHINA', 'NOLIMIT', 'REDTIGER', 'RELAX', 'PUSHGAMING', 'PLATIPUS', 'EZUGI'
+            ];
+            
             let combinedGames = [];
 
             // إرسال الطلبات للرابط المضمون فقط
@@ -726,7 +732,8 @@
 
             if (combinedGames.length > 0) {
                 window.allEVGamesCache = combinedGames;
-                localStorage.setItem('ev_games_cache_v3', JSON.stringify(combinedGames)); // حفظها لتسريع الموقع
+                // تغيير اسم الذاكرة إلى v4 ليقوم المتصفح بمسح القديم وجلب القائمة الضخمة الجديدة
+                localStorage.setItem('ev_games_cache_v4', JSON.stringify(combinedGames)); 
             }
             
             return window.allEVGamesCache;

@@ -1009,11 +1009,11 @@
     }
 
     // ================= 7. دوال مساعدة (UI & Launch) =================
-    // دالة إنشاء كروت الألعاب الموحدة
+    // دالة إنشاء كروت الألعاب الموحدة (تم التعديل لترسل كود المزود أيضاً)
     function createGameCard(g, isLive = false) {
         const title = escapeHTML(String(g.game_name || g.name || "Game"));
         const img = g.banner || g.image || g.thumb || `https://placehold.co/400x400/121212/${isLive ? 'ef4444' : '00ff87'}?text=${encodeURIComponent(title.substring(0, 15))}`;
-        const uuid = g.uuid || g.game_uuid || g.id || g.game_code;
+        const gameCode = g.uuid || g.game_uuid || g.id || g.game_code;
         const pCode = escapeHTML(g.provider || '');
         const borderColor = isLive ? 'hover:border-red-500' : 'hover:border-[#00ff87]';
         const btnColor = isLive ? 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-[#00ff87] text-black shadow-[0_0_15px_rgba(0,255,135,0.4)]';
@@ -1023,7 +1023,8 @@
         else badges += `<div class="absolute top-0 left-0 bg-[#00ff87] text-black text-[8px] font-black px-2 py-1 rounded-br-lg z-20 shadow-md">HOT 🔥</div>`;
 
         return `
-            <div onclick="launchSpecificVirtualGame('${uuid}')" class="bg-[#1a1c23] border border-gray-800 rounded-xl overflow-hidden cursor-pointer ${borderColor} transition-all flex flex-col group shadow-lg relative hover:-translate-y-1">
+            <!-- استخدام playCasinoGame بدلاً من الرابط القديم -->
+            <div onclick="playCasinoGame('${pCode}', '${gameCode}')" class="bg-[#1a1c23] border border-gray-800 rounded-xl overflow-hidden cursor-pointer ${borderColor} transition-all flex flex-col group shadow-lg relative hover:-translate-y-1">
                 ${badges}
                 <div class="relative w-full aspect-square overflow-hidden bg-[#121212]">
                     <img src="${img}" alt="${title}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/400x400/121212/333?text=Jeu';">
@@ -1035,16 +1036,25 @@
             </div>`;
     }
 
-    async function launchSpecificVirtualGame(uuid) {
+    // المحرك الصحيح لتشغيل الألعاب باستخدام الرابط المعتمد في السيرفر
+    async function playCasinoGame(providerCode, gameCode) {
         if (!playerSession) return openLoginModal();
         try {
-            const res = await fetch(`${BACKEND_URL}/api/provider/launch-eurovirtuals`, {
+            const res = await fetch(`${BACKEND_URL}/api/provider/launch-casino`, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('player_token')}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_code: playerSession.username, game_uuid: uuid })
+                headers: { 
+                    'Authorization': `Bearer ${localStorage.getItem('player_token')}`, 
+                    'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify({ 
+                    user_code: playerSession.username, 
+                    game_code: gameCode,
+                    provider_code: providerCode 
+                })
             });
 
             const data = await res.json();
+            
             if (data.launch_url) {
                 window.open(data.launch_url, '_blank');
                 setTimeout(refreshBalance, 4000);
@@ -1056,6 +1066,10 @@
         }
     }
 
+    // دالة احتياطية للأقسام الافتراضية القديمة لكي لا يتعطل أي زر
+    function launchSpecificVirtualGame(uuid) {
+        playCasinoGame('VIRTUAL', uuid);
+    }
     // ================= 8. أنظمة تسجيل الدخول والمستخدم =================
     async function handlePlayerAuth() {
         const user = document.getElementById('p-auth-username').value;

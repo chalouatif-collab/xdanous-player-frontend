@@ -697,7 +697,6 @@
 
     async function fetchGamesFromServerSilent() {
         try {
-            // 🌟 توسيع قائمة المزودين لتشمل أقوى الشركات المتاحة في نظامك 🌟
             const topProviders = [
                 'PRAGMATIC', 'HACKSAW', 'SPRIBE', 'PLAYNGO', 'EVOLUTION', 'EVO_LIVE', 
                 'NETENT', 'SMARTSOFT', 'AMUSNET', 'EGT', 'EVOPLAY', 'PGSOFT', 
@@ -707,33 +706,34 @@
             
             let combinedGames = [];
 
-            // إرسال الطلبات للرابط المضمون فقط
-            const fetchPromises = topProviders.map(pCode =>
-                fetch(`${BACKEND_URL}/api/get-providers`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ provider_code: pCode })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    let games = Array.isArray(data) ? data : (data.games || data.data || []);
-                    return games.map(g => ({...g, provider: pCode}));
-                })
-                .catch(() => []) 
-            );
-
-            const results = await Promise.all(fetchPromises);
-            
-            results.forEach(gamesArray => {
-                if (gamesArray && gamesArray.length > 0) {
-                    combinedGames = combinedGames.concat(gamesArray);
+            // 🌟 إرسال الطلبات بالترتيب (واحد تلو الآخر) لحماية السيرفر من الانهيار 🌟
+            for (let pCode of topProviders) {
+                try {
+                    const res = await fetch(`${BACKEND_URL}/api/get-providers`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ provider_code: pCode })
+                    });
+                    
+                    if (res.ok) {
+                        const data = await res.json();
+                        let games = Array.isArray(data) ? data : (data.games || data.data || []);
+                        if (games.length > 0) {
+                            combinedGames = combinedGames.concat(games.map(g => ({...g, provider: pCode})));
+                        }
+                    }
+                } catch (e) {
+                    console.warn(`تجاوز المزود ${pCode} مؤقتاً لتجنب ضغط السيرفر`);
                 }
-            });
+                
+                // إعطاء السيرفر استراحة 200 ملي ثانية قبل طلب المزود التالي
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
 
             if (combinedGames.length > 0) {
                 window.allEVGamesCache = combinedGames;
-                // تغيير اسم الذاكرة إلى v4 ليقوم المتصفح بمسح القديم وجلب القائمة الضخمة الجديدة
-                localStorage.setItem('ev_games_cache_v4', JSON.stringify(combinedGames)); 
+                // تغيير رقم الذاكرة إلى v5 ليقوم المتصفح بمسح القديم وجلب كل الشركات
+                localStorage.setItem('ev_games_cache_v5', JSON.stringify(combinedGames)); 
             }
             
             return window.allEVGamesCache;
@@ -742,7 +742,7 @@
             return window.allEVGamesCache;
         } finally {
             window.fetchPromise = null;
-            // تحديث الواجهات المعلقة
+            // تحديث الواجهات المعلقة فور اكتمال الجلب
             if (document.getElementById('games-grid')?.innerHTML.includes('fa-spin')) initCasinoLobby();
             if (document.getElementById('live-games-grid')?.innerHTML.includes('fa-spin')) openLiveCasino();
             if (document.getElementById('games-of-the-day-grid')?.innerHTML.includes('fa-spin')) loadGamesOfTheDay();

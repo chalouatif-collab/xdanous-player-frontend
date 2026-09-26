@@ -1068,17 +1068,14 @@
     }
 
     async function playCasinoGame(providerCode, gameCode, isEv) {
+        // التحقق من تسجيل الدخول
         if (!playerSession) return openLoginModal();
         
-        const container = document.getElementById('casino-iframe-container');
-        const iframe = document.getElementById('casino-iframe');
-        
-        if (container && iframe) {
-            container.classList.remove('hidden'); container.classList.add('flex');
-            iframe.src = ''; 
-        }
+        // إظهار إشعار للاعب بأن اللعبة قيد التجهيز
+        showNotification("Lancement du jeu en cours... ⏳", "success");
 
         try {
+            // توجيه ذكي: رابط وبيانات مختلفة لـ EV مقابل Nexus
             let endpointUrl = isEv ? `${BACKEND_URL}/api/provider/launch-eurovirtuals` : `${BACKEND_URL}/api/provider/launch-casino`;
             let requestBody = isEv ? 
                 { user_code: playerSession.username, game_uuid: gameCode } : 
@@ -1093,14 +1090,15 @@
             const data = await res.json();
             
             if (data.launch_url) {
-                if (iframe) iframe.src = data.launch_url;
+                // 💡 الحل الجذري: فتح رابط اللعبة في نافذة/علامة تبويب مستقلة
+                window.open(data.launch_url, '_blank');
+                
+                // تحديث الرصيد بعد 4 ثوانٍ
                 setTimeout(refreshBalance, 4000);
             } else {
-                if(container) { container.classList.add('hidden'); container.classList.remove('flex'); }
                 showNotification(data.error || "Jeu non disponible", "error");
             }
         } catch (e) {
-            if(container) { container.classList.add('hidden'); container.classList.remove('flex'); }
             showNotification("Erreur réseau", "error");
         }
     }

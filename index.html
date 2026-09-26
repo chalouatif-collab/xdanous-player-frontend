@@ -569,9 +569,33 @@
                         </div>
                     </div>
                 </div>
+            <!-- 1. قسم تاريخ الرياضة -->
+            <div id="pane-history-sports" class="player-view-section hidden w-full space-y-4">
+                <div class="bg-[#1a1c23] p-4 border border-gray-800 rounded-xl flex items-center gap-3 shadow-md">
+                    <i class="fas fa-ticket-alt text-2xl text-yellow-500"></i>
+                    <h2 class="text-white font-black text-xl uppercase tracking-wider">Mes Paris Sportifs</h2>
+                </div>
+                <div id="content-history-sports" class="bg-[#121212] border border-gray-800 rounded-xl p-6 min-h-[400px] overflow-hidden"></div>
+            </div>
+
+            <!-- 2. قسم تاريخ الكازينو -->
+            <div id="pane-history-casino" class="player-view-section hidden w-full space-y-4">
+                <div class="bg-[#1a1c23] p-4 border border-gray-800 rounded-xl flex items-center gap-3 shadow-md">
+                    <i class="fas fa-history text-2xl text-[#00ff87]"></i>
+                    <h2 class="text-white font-black text-xl uppercase tracking-wider">Historique de Casino</h2>
+                </div>
+                <div id="content-history-casino" class="bg-[#121212] border border-gray-800 rounded-xl p-6 min-h-[400px] overflow-hidden"></div>
+            </div>
+
+            <!-- 3. قسم تاريخ المعاملات -->
+            <div id="pane-history-transactions" class="player-view-section hidden w-full space-y-4">
+                <div class="bg-[#1a1c23] p-4 border border-gray-800 rounded-xl flex items-center gap-3 shadow-md">
+                    <i class="fas fa-exchange-alt text-2xl text-blue-400"></i>
+                    <h2 class="text-white font-black text-xl uppercase tracking-wider">Historique des Transactions</h2>
+                </div>
+                <div id="content-history-transactions" class="bg-[#121212] border border-gray-800 rounded-xl p-6 min-h-[400px] overflow-hidden"></div>
             </div>
         </aside>
-
     </main>
     <!-- ================= نهاية المحتوى الرئيسي ================= -->
     </main>
@@ -651,22 +675,19 @@
             <div id="sidebar-account-section" class="hidden border-t border-gray-800 pt-4 mt-2">
                 <h4 class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3 ml-1">Mon Compte</h4>
                 <div class="space-y-2">
-                    <!-- زر رهانات الرياضة -->
-                    <button onclick="openHistoryModal('sports')"
+                    <button onclick="loadHistorySection('sports')"
                         class="w-full flex items-center gap-3 bg-[#232630] hover:bg-gray-700 text-white p-3 rounded-lg transition font-bold text-sm">
                         <i class="fas fa-ticket-alt text-yellow-500 w-5 text-center"></i> Mes Paris
                     </button>
                     
-                    <!-- زر تاريخ الكازينو -->
-                    <button onclick="openHistoryModal('casino')"
+                    <button onclick="loadHistorySection('casino')"
                         class="w-full flex items-center gap-3 bg-[#232630] hover:bg-gray-700 text-white p-3 rounded-lg transition font-bold text-sm">
-                        <i class="fas fa-history text-[#00ff87] w-5 text-center"></i> Historique de Casino
+                        <i class="fas fa-history text-[#00ff87] w-5 text-center"></i> Historique Casino
                     </button>
                     
-                    <!-- زر المعاملات المالية -->
-                    <button onclick="openHistoryModal('transactions')"
+                    <button onclick="loadHistorySection('transactions')"
                         class="w-full flex items-center gap-3 bg-[#232630] hover:bg-gray-700 text-white p-3 rounded-lg transition font-bold text-sm">
-                        <i class="fas fa-exchange-alt text-blue-400 w-5 text-center"></i> Historique de Transaction
+                        <i class="fas fa-exchange-alt text-blue-400 w-5 text-center"></i> Transactions
                     </button>
                 </div>
             </div>
@@ -678,42 +699,7 @@
             </button>
         </div>
     </div>
-    <!-- 📄 نافذة السجلات (Historique Modal) -->
-    <div id="history-modal" class="fixed inset-0 bg-black/90 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden">
-            
-            <!-- الهيدر -->
-            <div class="flex justify-between items-center p-5 border-b border-gray-800 bg-[#1a1c23]">
-                <h2 class="text-white font-black text-xl flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-[#121212] flex items-center justify-center text-[#00ff87] shadow-inner">
-                        <i class="fas fa-folder-open"></i>
-                    </div>
-                    Mon Historique
-                </h2>
-                <button onclick="closeHistoryModal()" class="text-gray-500 hover:text-white bg-[#121212] hover:bg-red-500/20 w-10 h-10 rounded-full transition-all flex items-center justify-center">
-                    <i class="fas fa-times text-lg"></i>
-                </button>
-            </div>
-
-            <!-- التبويبات (Tabs) -->
-            <div class="flex border-b border-gray-800 bg-[#16181f]">
-                <button id="tab-sports" onclick="switchHistoryTab('sports')" class="flex-1 py-4 text-sm font-black text-gray-500 hover:text-white border-b-2 border-transparent transition-all uppercase tracking-wider">
-                    <i class="fas fa-futbol mb-1 block text-lg"></i> Mes Paris
-                </button>
-                <button id="tab-casino" onclick="switchHistoryTab('casino')" class="flex-1 py-4 text-sm font-black text-gray-500 hover:text-white border-b-2 border-transparent transition-all uppercase tracking-wider">
-                    <i class="fas fa-slot-machine mb-1 block text-lg"></i> Casino
-                </button>
-                <button id="tab-transactions" onclick="switchHistoryTab('transactions')" class="flex-1 py-4 text-sm font-black text-gray-500 hover:text-white border-b-2 border-transparent transition-all uppercase tracking-wider">
-                    <i class="fas fa-wallet mb-1 block text-lg"></i> Transactions
-                </button>
-            </div>
-
-            <!-- حاوية البيانات (الجداول ستظهر هنا) -->
-            <div class="p-6 overflow-y-auto flex-1 custom-scrollbar bg-[#121212] relative" id="history-content">
-                <!-- المحتوى الديناميكي -->
-            </div>
-        </div>
-    </div>
+    
 
     <!-- نافذة تسجيل الدخول (بسيطة وأنيقة ومربوطة برمجياً) -->
     <div id="player-login-modal"
@@ -1433,51 +1419,33 @@ async function playCasinoGame(providerCode, gameCode, isEv) {
         openSportsbookForProvider('SPORTSBOOK');
     }
 
-    // ================= محرك السجلات (History Engine) =================
+    // ================= محرك السجلات (Main View) =================
 
-    function openHistoryModal(tab) {
+    async function loadHistorySection(type) {
         if (!playerSession) return openLoginModal();
-        
-        // إغلاق القائمة الجانبية إذا كانت مفتوحة
+
+        // 1. إغلاق القائمة الجانبية إذا كانت مفتوحة (مهم جداً للهاتف)
         const profileSidebar = document.getElementById('profile-sidebar');
         if (profileSidebar && !profileSidebar.classList.contains('translate-x-full')) {
             toggleProfileSidebar();
         }
 
-        document.getElementById('history-modal').classList.remove('hidden');
-        switchHistoryTab(tab);
-    }
+        // 2. تبديل الشاشة الرئيسية لعرض القسم المطلوب
+        const paneId = 'history-' + type;
+        switchSection(paneId);
 
-    function closeHistoryModal() {
-        document.getElementById('history-modal').classList.add('hidden');
-    }
-
-    async function switchHistoryTab(tab) {
-        // إعادة تعيين ألوان جميع التبويبات
-        ['sports', 'casino', 'transactions'].forEach(t => {
-            let btn = document.getElementById('tab-' + t);
-            btn.classList.remove('text-[#00ff87]', 'border-[#00ff87]', 'bg-gray-800/30');
-            btn.classList.add('text-gray-500', 'border-transparent');
-        });
-
-        // تفعيل التبويب المختار
-        let activeBtn = document.getElementById('tab-' + tab);
-        activeBtn.classList.remove('text-gray-500', 'border-transparent');
-        activeBtn.classList.add('text-[#00ff87]', 'border-[#00ff87]', 'bg-gray-800/30');
-
-        const content = document.getElementById('history-content');
-        
-        // شاشة التحميل الأنيقة
-        content.innerHTML = `
-            <div class="absolute inset-0 flex flex-col items-center justify-center">
-                <i class="fas fa-circle-notch fa-spin text-4xl text-[#00ff87] mb-4 shadow-[0_0_15px_rgba(0,255,135,0.5)] rounded-full"></i>
-                <p class="text-gray-400 font-bold uppercase tracking-widest text-xs animate-pulse">Recherche des données...</p>
+        // 3. عرض شاشة التحميل في القسم المخصص
+        const contentDiv = document.getElementById('content-history-' + type);
+        contentDiv.innerHTML = `
+            <div class="h-full flex flex-col items-center justify-center py-20">
+                <i class="fas fa-circle-notch fa-spin text-5xl text-[#00ff87] mb-4"></i>
+                <p class="text-gray-400 font-bold uppercase tracking-widest text-sm animate-pulse">Chargement des données...</p>
             </div>
         `;
 
         try {
-            // جلب البيانات الحقيقية من السيرفر
-            const response = await fetch(`${BACKEND_URL}/api/player/history?type=${tab}`, {
+            // 4. جلب البيانات من السيرفر
+            const response = await fetch(`${BACKEND_URL}/api/player/history?type=${type}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('player_token')}`,
@@ -1488,49 +1456,39 @@ async function playCasinoGame(providerCode, gameCode, isEv) {
             const result = await response.json();
             
             if (result.status === 'success' && result.data && result.data.length > 0) {
-                renderHistoryTable(tab, result.data);
+                renderHistoryTableInline(type, result.data, contentDiv);
             } else {
-                renderEmptyHistory(tab); // إذا لم يكن هناك بيانات
+                renderEmptyHistoryInline(type, contentDiv);
             }
         } catch (error) {
-            content.innerHTML = `<div class="text-center text-red-500 py-10 font-bold"><i class="fas fa-exclamation-triangle text-3xl mb-3"></i><br>Erreur de connexion au serveur</div>`;
+            contentDiv.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-red-500 py-20 font-bold"><i class="fas fa-exclamation-triangle text-5xl mb-3"></i><p>Erreur de connexion</p></div>`;
         }
     }
 
-    // دالة رسم الجداول باحترافية
-    function renderHistoryTable(tab, data) {
-        const content = document.getElementById('history-content');
-        
+    function renderHistoryTableInline(type, data, container) {
         let tableHTML = `
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse whitespace-nowrap">
                     <thead>
-                        <tr class="border-b border-gray-800 bg-[#16181f]">
-                            <th class="p-4 text-xs font-black text-gray-500 uppercase tracking-wider">Date & Heure</th>
+                        <tr class="border-b border-gray-700 bg-[#16181f]">
+                            <th class="p-4 text-xs font-black text-gray-500 uppercase tracking-wider rounded-tl-lg">Date & Heure</th>
                             <th class="p-4 text-xs font-black text-gray-500 uppercase tracking-wider">Type / Action</th>
                             <th class="p-4 text-xs font-black text-gray-500 uppercase tracking-wider">Montant</th>
-                            <th class="p-4 text-xs font-black text-gray-500 uppercase tracking-wider text-right">Réf (ID)</th>
+                            <th class="p-4 text-xs font-black text-gray-500 uppercase tracking-wider text-right rounded-tr-lg">Réf (ID)</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-800/50">
+                    <tbody class="divide-y divide-gray-800">
         `;
 
         data.forEach(item => {
-            // تنسيق الألوان والأيقونات حسب نوع العملية
-            let actionColor = 'text-gray-400';
-            let actionIcon = 'fa-file-invoice';
-            let actionText = item.action.toUpperCase();
-            let amountPrefix = '';
-            let amountColor = 'text-white';
+            let actionColor = 'text-gray-400'; let actionIcon = 'fa-file-invoice'; let actionText = item.action.toUpperCase();
+            let amountPrefix = ''; let amountColor = 'text-white';
 
-            // تنسيق الكازينو والرياضة
             if (item.action.includes('bet') || item.action === 'debit') {
                 actionColor = 'text-red-400'; actionIcon = 'fa-arrow-down'; actionText = 'PARI (BET)'; amountPrefix = '-';
             } else if (item.action.includes('win') || item.action === 'credit') {
                 actionColor = 'text-[#00ff87]'; actionIcon = 'fa-arrow-up'; actionText = 'GAIN (WIN)'; amountPrefix = '+'; amountColor = 'text-[#00ff87]';
-            } 
-            // تنسيق المعاملات المالية
-            else if (item.action === 'charge' || item.action === 'dépôt') {
+            } else if (item.action === 'charge' || item.action === 'dépôt') {
                 actionColor = 'text-[#00ff87]'; actionIcon = 'fa-wallet'; actionText = 'DÉPÔT'; amountPrefix = '+'; amountColor = 'text-[#00ff87]';
             } else if (item.action.includes('withdraw') || item.action === 'retrait') {
                 actionColor = 'text-red-500'; actionIcon = 'fa-money-bill-wave'; actionText = 'RETRAIT'; amountPrefix = '-';
@@ -1539,10 +1497,10 @@ async function playCasinoGame(providerCode, gameCode, isEv) {
             }
 
             tableHTML += `
-                <tr class="hover:bg-gray-800/20 transition-colors">
-                    <td class="p-4 text-sm font-bold text-gray-300 whitespace-nowrap">${item.date}</td>
+                <tr class="hover:bg-gray-800/40 transition-colors">
+                    <td class="p-4 text-sm font-bold text-gray-300">${item.date}</td>
                     <td class="p-4 text-sm font-black ${actionColor} flex items-center gap-2">
-                        <i class="fas ${actionIcon}"></i> ${actionText}
+                        <i class="fas ${actionIcon} w-4 text-center"></i> ${actionText}
                     </td>
                     <td class="p-4 text-sm font-black ${amountColor} tabular-nums">${amountPrefix}${item.amount.toFixed(2)} TND</td>
                     <td class="p-4 text-xs font-bold text-gray-600 text-right uppercase tracking-wider">${item.tx_id}</td>
@@ -1551,41 +1509,24 @@ async function playCasinoGame(providerCode, gameCode, isEv) {
         });
 
         tableHTML += `</tbody></table></div>`;
-        content.innerHTML = tableHTML;
+        container.innerHTML = tableHTML;
     }
 
-    function renderEmptyHistory(tab) {
-        const content = document.getElementById('history-content');
-        let icon, title, desc;
+    function renderEmptyHistoryInline(type, container) {
+        let icon = type === 'sports' ? 'fa-ticket-alt text-yellow-500' : (type === 'casino' ? 'fa-history text-[#00ff87]' : 'fa-exchange-alt text-blue-400');
+        let title = type === 'sports' ? 'Aucun Pari Sportif' : (type === 'casino' ? 'Aucun Jeu Joué' : 'Aucune Transaction');
+        let btnAction = type === 'sports' ? "openSportsbookForProvider('SPORTSBOOK')" : "switchSection('casino'); initCasinoLobby();";
 
-        if (tab === 'sports') {
-            icon = 'fa-ticket-alt text-yellow-500';
-            title = 'Aucun Pari Sportif';
-            desc = 'Vous n\'avez pas encore placé de paris sportifs.';
-        } else if (tab === 'casino') {
-            icon = 'fa-history text-[#00ff87]';
-            title = 'Aucun Jeu Joué';
-            desc = 'Votre historique de casino est actuellement vide.';
-        } else {
-            icon = 'fa-exchange-alt text-blue-400';
-            title = 'Aucune Transaction';
-            desc = 'Aucun dépôt ou retrait n\'a été effectué pour le moment.';
-        }
-
-        content.innerHTML = `
-            <div class="h-full flex flex-col items-center justify-center text-center py-12">
+        container.innerHTML = `
+            <div class="h-full flex flex-col items-center justify-center text-center py-16">
                 <div class="w-24 h-24 bg-[#1a1c23] border border-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg">
                     <i class="fas ${icon} text-4xl opacity-80"></i>
                 </div>
-                <h3 class="text-white font-black text-xl mb-2 uppercase tracking-wide">${title}</h3>
-                <p class="text-gray-500 font-bold text-sm max-w-sm mb-8">${desc}</p>
-                <button onclick="closeHistoryModal(); ${tab === 'sports' ? 'openSportsbookForProvider(\'SPORTSBOOK\')' : 'switchSection(\'casino\'); initCasinoLobby();'}" 
-                        class="bg-[#1a1c23] hover:bg-[#00ff87] border border-gray-700 hover:border-[#00ff87] text-white hover:text-black font-black py-3 px-8 rounded-full transition-all uppercase tracking-widest text-xs">
+                <h3 class="text-white font-black text-2xl mb-2 uppercase tracking-wide">${title}</h3>
+                <p class="text-gray-500 font-bold text-sm max-w-sm mb-8">Aucun enregistrement trouvé pour cette section.</p>
+                <button onclick="${btnAction}" class="bg-[#1a1c23] hover:bg-[#00ff87] border border-gray-700 hover:border-[#00ff87] text-white hover:text-black font-black py-3 px-8 rounded-full transition-all uppercase tracking-widest text-xs">
                     Commencer à jouer
                 </button>
             </div>
         `;
     }
-</script>
-</body>
-</html>

@@ -130,40 +130,61 @@
             </div>
         </div>
 
-        <!-- 🌟 شريط التنقل الجديد كلياً (DataBet Style) 🌟 -->
-        <div class="bg-betDark border-b border-gray-800 w-full overflow-hidden">
-            <nav id="main-nav-scroll"
-                class="flex items-center h-14 overflow-x-auto no-scrollbar whitespace-nowrap px-2 md:px-6 relative scroll-smooth text-sm font-bold">
+        <!-- 🌟 شريط التنقل (Pill Buttons Style) 🌟 -->
+        <div class="bg-[#121212] border-b border-gray-800 w-full overflow-hidden py-2 md:py-3">
+            <nav id="main-nav-scroll" class="flex items-center gap-2 overflow-x-auto no-scrollbar px-3 md:px-8 relative scroll-smooth font-bold snap-x">
 
-                <!-- الأزرار بالتصميم الجديد -->
                 <button id="btn-nav-accueil" onclick="setActiveMenuBtn('btn-nav-accueil'); switchSection('accueil')"
-                    class="main-nav-btn flex items-center justify-center gap-2 h-full px-4 text-neonGreen border-b-[3px] border-neonGreen bg-gradient-to-t from-neonGreen/10 to-transparent transition-all shrink-0">
+                    class="main-nav-btn snap-start flex items-center justify-center gap-1.5 md:gap-2 px-4 py-1.5 md:px-5 md:py-2.5 text-black bg-neonGreen border border-neonGreen rounded-full transition-all shrink-0 shadow-[0_0_15px_rgba(0,255,135,0.4)] font-black uppercase tracking-wide text-[10px] md:text-xs">
                     <i class="fas fa-home"></i> Accueil
                 </button>
 
-                <button id="btn-nav-sport"
-                    onclick="setActiveMenuBtn('btn-nav-sport'); openSportsbookForProvider('nexus')"
-                    class="main-nav-btn flex items-center justify-center gap-2 h-full px-4 text-gray-400 hover:text-gray-200 border-b-[3px] border-transparent transition-all shrink-0">
+                <button id="btn-nav-sport" onclick="setActiveMenuBtn('btn-nav-sport'); openSportsbookForProvider('nexus')"
+                    class="main-nav-btn snap-start flex items-center justify-center gap-1.5 md:gap-2 px-4 py-1.5 md:px-5 md:py-2.5 text-gray-400 bg-[#1a1c23] border border-gray-800 hover:text-white hover:border-neonGreen rounded-full transition-all shrink-0 font-bold uppercase tracking-wide text-[10px] md:text-xs shadow-sm">
                     <i class="fas fa-futbol"></i> Sport
                 </button>
 
-                <button id="btn-nav-casino"
-                    onclick="setActiveMenuBtn('btn-nav-casino'); switchSection('casino'); initCasinoLobby();"
-                    class="main-nav-btn flex items-center justify-center gap-2 h-full px-4 text-gray-400 hover:text-gray-200 border-b-[3px] border-transparent transition-all shrink-0">
+                <button id="btn-nav-casino" onclick="setActiveMenuBtn('btn-nav-casino'); switchSection('casino'); initCasinoLobby();"
+                    class="main-nav-btn snap-start flex items-center justify-center gap-1.5 md:gap-2 px-4 py-1.5 md:px-5 md:py-2.5 text-gray-400 bg-[#1a1c23] border border-gray-800 hover:text-white hover:border-neonGreen rounded-full transition-all shrink-0 font-bold uppercase tracking-wide text-[10px] md:text-xs shadow-sm">
                     <i class="fas fa-slot-machine"></i> Casino
                 </button>
 
-                <button id="btn-nav-live"
-                    onclick="setActiveMenuBtn('btn-nav-live'); switchSection('live-casino'); openLiveCasino();"
-                    class="main-nav-btn flex items-center justify-center gap-2 h-full px-4 text-gray-400 hover:text-gray-200 border-b-[3px] border-transparent transition-all shrink-0">
+                <button id="btn-nav-live" onclick="setActiveMenuBtn('btn-nav-live'); switchSection('live-casino'); openLiveCasino();"
+                    class="main-nav-btn snap-start flex items-center justify-center gap-1.5 md:gap-2 px-4 py-1.5 md:px-5 md:py-2.5 text-gray-400 bg-[#1a1c23] border border-gray-800 hover:text-white hover:border-neonGreen rounded-full transition-all shrink-0 font-bold uppercase tracking-wide text-[10px] md:text-xs shadow-sm">
                     <i class="fas fa-video"></i> Live Casino
                 </button>
 
-                <button id="btn-nav-virtuals"
-                    onclick="setActiveMenuBtn('btn-nav-virtuals'); switchSection('virtuals'); initVirtualsLobby();"
-                    class="main-nav-btn flex items-center justify-center gap-2 h-full px-4 text-gray-400 hover:text-gray-200 border-b-[3px] border-transparent transition-all shrink-0">
+                <button id="btn-nav-virtuals" onclick="setActiveMenuBtn('btn-nav-virtuals'); switchSection('virtuals'); initVirtualsLobby();"
+                    class="main-nav-btn snap-start flex items-center justify-center gap-1.5 md:gap-2 px-4 py-1.5 md:px-5 md:py-2.5 text-gray-400 bg-[#1a1c23] border border-gray-800 hover:text-white hover:border-neonGreen rounded-full transition-all shrink-0 font-bold uppercase tracking-wide text-[10px] md:text-xs shadow-sm">
                     <i class="fas fa-gamepad"></i> Virtuels
                 </button>
+
+                <!-- 🆕 الأزرار الخمسة الجديدة -->
+                <button id="btn-nav-crash" onclick="setActiveMenuBtn('btn-nav-crash');"
+                    class="main-nav-btn snap-start flex items-center justify-center gap-1.5 md:gap-2 px-4 py-1.5 md:px-5 md:py-2.5 text-gray-400 bg-[#1a1c23] border border-gray-800 hover:text-white hover:border-neonGreen rounded-full transition-all shrink-0 font-bold uppercase tracking-wide text-[10px] md:text-xs shadow-sm">
+                    <i class="fas fa-rocket"></i> Crash Games
+                </button>
+
+                <button id="btn-nav-tv" onclick="setActiveMenuBtn('btn-nav-tv');"
+                    class="main-nav-btn snap-start flex items-center justify-center gap-1.5 md:gap-2 px-4 py-1.5 md:px-5 md:py-2.5 text-gray-400 bg-[#1a1c23] border border-gray-800 hover:text-white hover:border-neonGreen rounded-full transition-all shrink-0 font-bold uppercase tracking-wide text-[10px] md:text-xs shadow-sm">
+                    <i class="fas fa-tv"></i> Jeux TV
+                </button>
+
+                <button id="btn-nav-esports" onclick="setActiveMenuBtn('btn-nav-esports');"
+                    class="main-nav-btn snap-start flex items-center justify-center gap-1.5 md:gap-2 px-4 py-1.5 md:px-5 md:py-2.5 text-gray-400 bg-[#1a1c23] border border-gray-800 hover:text-white hover:border-neonGreen rounded-full transition-all shrink-0 font-bold uppercase tracking-wide text-[10px] md:text-xs shadow-sm">
+                    <i class="fas fa-headset"></i> eSports
+                </button>
+
+                <button id="btn-nav-promos" onclick="setActiveMenuBtn('btn-nav-promos');"
+                    class="main-nav-btn snap-start flex items-center justify-center gap-1.5 md:gap-2 px-4 py-1.5 md:px-5 md:py-2.5 text-gray-400 bg-[#1a1c23] border border-gray-800 hover:text-white hover:border-neonGreen rounded-full transition-all shrink-0 font-bold uppercase tracking-wide text-[10px] md:text-xs shadow-sm">
+                    <i class="fas fa-gift text-red-500"></i> Promotions
+                </button>
+
+                <button id="btn-nav-vip" onclick="setActiveMenuBtn('btn-nav-vip');"
+                    class="main-nav-btn snap-start flex items-center justify-center gap-1.5 md:gap-2 px-4 py-1.5 md:px-5 md:py-2.5 text-gray-400 bg-[#1a1c23] border border-gray-800 hover:text-white hover:border-neonGreen rounded-full transition-all shrink-0 font-bold uppercase tracking-wide text-[10px] md:text-xs shadow-sm">
+                    <i class="fas fa-crown text-yellow-500"></i> Club VIP
+                </button>
+
             </nav>
         </div>
     </header>

@@ -1452,7 +1452,7 @@ async function playCasinoGame(providerCode, gameCode, isEv) {
         document.getElementById('history-modal').classList.add('hidden');
     }
 
-    function switchHistoryTab(tab) {
+    async function switchHistoryTab(tab) {
         // إعادة تعيين ألوان جميع التبويبات
         ['sports', 'casino', 'transactions'].forEach(t => {
             let btn = document.getElementById('tab-' + t);
@@ -1466,6 +1466,7 @@ async function playCasinoGame(providerCode, gameCode, isEv) {
         activeBtn.classList.add('text-[#00ff87]', 'border-[#00ff87]', 'bg-gray-800/30');
 
         const content = document.getElementById('history-content');
+        
         // شاشة التحميل الأنيقة
         content.innerHTML = `
             <div class="absolute inset-0 flex flex-col items-center justify-center">
@@ -1474,11 +1475,83 @@ async function playCasinoGame(providerCode, gameCode, isEv) {
             </div>
         `;
 
-        // هنا مستقبلاً ستضع دوال fetch لجلب البيانات من الباك إند.
-        // حالياً سنعرض واجهة "لا يوجد سجلات" بعد ثانية واحدة لتبدو المنصة تفاعلية.
-        setTimeout(() => {
-            renderEmptyHistory(tab);
-        }, 800);
+        try {
+            // جلب البيانات الحقيقية من السيرفر
+            const response = await fetch(`${BACKEND_URL}/api/player/history?type=${tab}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('player_token')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.status === 'success' && result.data && result.data.length > 0) {
+                renderHistoryTable(tab, result.data);
+            } else {
+                renderEmptyHistory(tab); // إذا لم يكن هناك بيانات
+            }
+        } catch (error) {
+            content.innerHTML = `<div class="text-center text-red-500 py-10 font-bold"><i class="fas fa-exclamation-triangle text-3xl mb-3"></i><br>Erreur de connexion au serveur</div>`;
+        }
+    }
+
+    // دالة رسم الجداول باحترافية
+    function renderHistoryTable(tab, data) {
+        const content = document.getElementById('history-content');
+        
+        let tableHTML = `
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-800 bg-[#16181f]">
+                            <th class="p-4 text-xs font-black text-gray-500 uppercase tracking-wider">Date & Heure</th>
+                            <th class="p-4 text-xs font-black text-gray-500 uppercase tracking-wider">Type / Action</th>
+                            <th class="p-4 text-xs font-black text-gray-500 uppercase tracking-wider">Montant</th>
+                            <th class="p-4 text-xs font-black text-gray-500 uppercase tracking-wider text-right">Réf (ID)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-800/50">
+        `;
+
+        data.forEach(item => {
+            // تنسيق الألوان والأيقونات حسب نوع العملية
+            let actionColor = 'text-gray-400';
+            let actionIcon = 'fa-file-invoice';
+            let actionText = item.action.toUpperCase();
+            let amountPrefix = '';
+            let amountColor = 'text-white';
+
+            // تنسيق الكازينو والرياضة
+            if (item.action.includes('bet') || item.action === 'debit') {
+                actionColor = 'text-red-400'; actionIcon = 'fa-arrow-down'; actionText = 'PARI (BET)'; amountPrefix = '-';
+            } else if (item.action.includes('win') || item.action === 'credit') {
+                actionColor = 'text-[#00ff87]'; actionIcon = 'fa-arrow-up'; actionText = 'GAIN (WIN)'; amountPrefix = '+'; amountColor = 'text-[#00ff87]';
+            } 
+            // تنسيق المعاملات المالية
+            else if (item.action === 'charge' || item.action === 'dépôt') {
+                actionColor = 'text-[#00ff87]'; actionIcon = 'fa-wallet'; actionText = 'DÉPÔT'; amountPrefix = '+'; amountColor = 'text-[#00ff87]';
+            } else if (item.action.includes('withdraw') || item.action === 'retrait') {
+                actionColor = 'text-red-500'; actionIcon = 'fa-money-bill-wave'; actionText = 'RETRAIT'; amountPrefix = '-';
+            } else if (item.action === 'cashback') {
+                actionColor = 'text-yellow-500'; actionIcon = 'fa-gift'; actionText = 'CASHBACK'; amountPrefix = '+'; amountColor = 'text-yellow-500';
+            }
+
+            tableHTML += `
+                <tr class="hover:bg-gray-800/20 transition-colors">
+                    <td class="p-4 text-sm font-bold text-gray-300 whitespace-nowrap">${item.date}</td>
+                    <td class="p-4 text-sm font-black ${actionColor} flex items-center gap-2">
+                        <i class="fas ${actionIcon}"></i> ${actionText}
+                    </td>
+                    <td class="p-4 text-sm font-black ${amountColor} tabular-nums">${amountPrefix}${item.amount.toFixed(2)} TND</td>
+                    <td class="p-4 text-xs font-bold text-gray-600 text-right uppercase tracking-wider">${item.tx_id}</td>
+                </tr>
+            `;
+        });
+
+        tableHTML += `</tbody></table></div>`;
+        content.innerHTML = tableHTML;
     }
 
     function renderEmptyHistory(tab) {

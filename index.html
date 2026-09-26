@@ -737,19 +737,23 @@
     };
 
     // ================= 2. محرك الجلب المركزي (الذاكرة التراكمية الذكية) =================
+    
     async function fetchAllEVGames() {
         if (window.allEVGamesCache.length > 0) return window.allEVGamesCache;
 
-        const cachedData = localStorage.getItem('ev_games_cache_v6');
-        if (cachedData) {
-            window.allEVGamesCache = JSON.parse(cachedData);
-            
-            // 💡 التعديل الذكي: لا نشغل الجلب في الخلفية إلا إذا كان هناك مزودين ناقصين
-            const loadedProviders = [...new Set(window.allEVGamesCache.map(g => g.provider))];
-            if (loadedProviders.length < 25 && !window.fetchPromise) {
-                window.fetchPromise = fetchGamesFromServerSilent();
+        // 💡 حماية قراءة التخزين لمنع انهيار السكريبت على الهواتف
+        try {
+            const cachedData = localStorage.getItem('ev_games_cache_final');
+            if (cachedData) {
+                window.allEVGamesCache = JSON.parse(cachedData);
+                const loadedProviders = [...new Set(window.allEVGamesCache.map(g => g.provider))];
+                if (loadedProviders.length < 25 && !window.fetchPromise) {
+                    window.fetchPromise = fetchGamesFromServerSilent();
+                }
+                return window.allEVGamesCache;
             }
-            return window.allEVGamesCache;
+        } catch (e) {
+            console.warn("Storage read blocked by mobile browser.");
         }
 
         if (!window.fetchPromise) {
@@ -760,13 +764,10 @@
 
     async function fetchGamesFromServerSilent() {
         try {
-            // 🌟 السيرفر الخاص بك الآن يرسل كل الألعاب والمزودين بطلب واحد فقط! 🌟
             const res = await fetch(`${BACKEND_URL}/api/get-eurovirtuals-games`);
             const data = await res.json();
             
             let combinedGames = [];
-            
-            // استخراج البيانات بناءً على الرد
             if (data.status === "success" && data.data) {
                 combinedGames = data.data;
             } else if (Array.isArray(data)) {
@@ -776,15 +777,19 @@
             }
 
             if (combinedGames.length > 0) {
-                // توحيد اسم المزود أياً كان الاسم الذي يعتمده إيفرتيال
                 combinedGames = combinedGames.map(g => ({
                     ...g, 
                     provider: g.provider || g.provider_name || g.provider_code || g.vendor || 'EV_Game'
                 }));
                 
                 window.allEVGamesCache = combinedGames;
-                // حفظها محلياً تحت اسم جديد
-                localStorage.setItem('ev_games_cache_final', JSON.stringify(combinedGames)); 
+                
+                // 💡 حماية كتابة التخزين لمنع توقف السكريبت
+                try {
+                    localStorage.setItem('ev_games_cache_final', JSON.stringify(combinedGames)); 
+                } catch (err) {
+                    console.warn("Storage write blocked by mobile browser, skipping cache.");
+                }
             }
             
             return window.allEVGamesCache;
@@ -793,12 +798,12 @@
             return window.allEVGamesCache;
         } finally {
             window.fetchPromise = null;
-            // تحديث الواجهات المعلقة فور وصول الألعاب
             if (document.getElementById('games-grid')?.innerHTML.includes('fa-spin')) initCasinoLobby();
             if (document.getElementById('live-games-grid')?.innerHTML.includes('fa-spin')) openLiveCasino();
             if (document.getElementById('games-of-the-day-grid')?.innerHTML.includes('fa-spin')) loadGamesOfTheDay();
         }
     }
+    
     // ================= دالة جديدة: تحديث الواجهة بصمت (ضعها تحت دالة fetchGamesFromServerSilent مباشرة) =================
     function updateUIQuietly() {
         // تحديث قائمة الكازينو المنسدلة فقط إذا كان اللاعب يرى "كل المزودين"
@@ -1034,11 +1039,11 @@
 
     // ================= 7. دوال مساعدة (UI & Launch) =================
     
+    // 💡 استخدام حيلة pt-[100%] بدلاً من aspect-square لتعمل على جميع الهواتف بامتياز
     function createGameCard(g, isLive = false) {
         const title = escapeHTML(String(g.game_name || g.name || "Game"));
         const img = g.banner || g.image || g.thumb || `https://placehold.co/400x400/121212/${isLive ? 'ef4444' : '00ff87'}?text=${encodeURIComponent(title.substring(0, 15))}`;
         
-        // استخراج كود اللعبة واسم المزود
         const gameCode = g.game_code || g.uuid || g.game_uuid || g.id;
         const pCode = escapeHTML(g.provider || '');
         
@@ -1050,11 +1055,10 @@
         else badges += `<div class="absolute top-0 left-0 bg-[#00ff87] text-black text-[8px] font-black px-2 py-1 rounded-br-lg z-20 shadow-md">HOT 🔥</div>`;
 
         return `
-            <!-- نرسل اسم المزود (pCode) وكود اللعبة (gameCode) معاً لتجنب خطأ INVALID_GAME -->
             <div onclick="launchSpecificVirtualGame('${pCode}', '${gameCode}')" class="bg-[#1a1c23] border border-gray-800 rounded-xl overflow-hidden cursor-pointer ${borderColor} transition-all flex flex-col group shadow-lg relative hover:-translate-y-1">
                 ${badges}
-                <div class="relative w-full aspect-square overflow-hidden bg-[#121212]">
-                    <img src="${img}" alt="${title}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/400x400/121212/333?text=Jeu';">
+                <div class="relative w-full pt-[100%] overflow-hidden bg-[#121212]">
+                    <img src="${img}" alt="${title}" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/400x400/121212/333?text=Jeu';">
                     <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 z-10">
                         <span class="${btnColor} text-white text-[10px] font-bold px-4 py-2 rounded-full">JOUER</span>
                     </div>

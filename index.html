@@ -566,6 +566,7 @@
                         <div class="bg-[#121212] border border-gray-800 rounded-xl p-4 w-32 shadow-inner">
                             <i class="fas fa-gift text-red-500 text-xl mb-2"></i>
                             <h4 class="text-white font-bold text-[10px] uppercase tracking-widest">Bonus Sans Wager</h4>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1437,18 +1438,8 @@ async function playCasinoGame(providerCode, gameCode, isEv) {
             if(typeof toggleProfileSidebar === 'function') toggleProfileSidebar();
         }
 
-        // 3. 🚨 الحل الجذري للشاشة الفارغة: إخفاء جميع الأقسام يدوياً وإظهار القسم المطلوب 🚨
-        document.querySelectorAll('.player-view-section').forEach(el => {
-            el.classList.add('hidden');
-        });
-        
-        const targetPane = document.getElementById('pane-history-' + type);
-        if (targetPane) {
-            targetPane.classList.remove('hidden');
-        } else {
-            console.error("Erreur: Section introuvable -> pane-history-" + type);
-            return;
-        }
+        // 3. عرض القسم المطلوب باستخدام الدالة الأصلية
+        switchSection('history-' + type);
 
         // التمرير لأعلى الصفحة بسلاسة
         window.scrollTo({ top: 0, behavior: 'smooth' });

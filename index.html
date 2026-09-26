@@ -648,26 +648,70 @@
             </div>
 
             <!-- خيارات الحساب -->
-            <div id="sidebar-account-section" class="hidden border-t border-gray-800 pt-4">
+            <div id="sidebar-account-section" class="hidden border-t border-gray-800 pt-4 mt-2">
                 <h4 class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3 ml-1">Mon Compte</h4>
                 <div class="space-y-2">
-                    <a href="javascript:void(0)"
-                        class="flex items-center gap-3 text-gray-300 hover:text-white hover:bg-gray-800 p-3 rounded-lg transition text-sm font-bold">
-                        <i class="fas fa-history text-neonGreen w-5 text-center"></i> Historique des paris
-                    </a>
-                    <a href="javascript:void(0)"
-                        class="flex items-center gap-3 text-gray-300 hover:text-white hover:bg-gray-800 p-3 rounded-lg transition text-sm font-bold">
-                        <i class="fas fa-exchange-alt text-yellow-500 w-5 text-center"></i> Transactions
-                    </a>
+                    <!-- زر رهانات الرياضة -->
+                    <button onclick="openHistoryModal('sports')"
+                        class="w-full flex items-center gap-3 bg-[#232630] hover:bg-gray-700 text-white p-3 rounded-lg transition font-bold text-sm">
+                        <i class="fas fa-ticket-alt text-yellow-500 w-5 text-center"></i> Mes Paris
+                    </button>
+                    
+                    <!-- زر تاريخ الكازينو -->
+                    <button onclick="openHistoryModal('casino')"
+                        class="w-full flex items-center gap-3 bg-[#232630] hover:bg-gray-700 text-white p-3 rounded-lg transition font-bold text-sm">
+                        <i class="fas fa-history text-[#00ff87] w-5 text-center"></i> Historique de Casino
+                    </button>
+                    
+                    <!-- زر المعاملات المالية -->
+                    <button onclick="openHistoryModal('transactions')"
+                        class="w-full flex items-center gap-3 bg-[#232630] hover:bg-gray-700 text-white p-3 rounded-lg transition font-bold text-sm">
+                        <i class="fas fa-exchange-alt text-blue-400 w-5 text-center"></i> Historique de Transaction
+                    </button>
                 </div>
             </div>
-        </div>
 
         <div class="p-4 bg-[#121212] border-t border-gray-800 flex gap-2">
             <button onclick="toggleProfileSidebar(); logoutPlayer();"
                 class="w-full bg-red-500/10 border border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white font-black py-3 rounded transition uppercase tracking-widest text-[10px]">
                 Déconnexion
             </button>
+        </div>
+    </div>
+    <!-- 📄 نافذة السجلات (Historique Modal) -->
+    <div id="history-modal" class="fixed inset-0 bg-black/90 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-[#121212] border border-gray-800 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden">
+            
+            <!-- الهيدر -->
+            <div class="flex justify-between items-center p-5 border-b border-gray-800 bg-[#1a1c23]">
+                <h2 class="text-white font-black text-xl flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-[#121212] flex items-center justify-center text-[#00ff87] shadow-inner">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    Mon Historique
+                </h2>
+                <button onclick="closeHistoryModal()" class="text-gray-500 hover:text-white bg-[#121212] hover:bg-red-500/20 w-10 h-10 rounded-full transition-all flex items-center justify-center">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+
+            <!-- التبويبات (Tabs) -->
+            <div class="flex border-b border-gray-800 bg-[#16181f]">
+                <button id="tab-sports" onclick="switchHistoryTab('sports')" class="flex-1 py-4 text-sm font-black text-gray-500 hover:text-white border-b-2 border-transparent transition-all uppercase tracking-wider">
+                    <i class="fas fa-futbol mb-1 block text-lg"></i> Mes Paris
+                </button>
+                <button id="tab-casino" onclick="switchHistoryTab('casino')" class="flex-1 py-4 text-sm font-black text-gray-500 hover:text-white border-b-2 border-transparent transition-all uppercase tracking-wider">
+                    <i class="fas fa-slot-machine mb-1 block text-lg"></i> Casino
+                </button>
+                <button id="tab-transactions" onclick="switchHistoryTab('transactions')" class="flex-1 py-4 text-sm font-black text-gray-500 hover:text-white border-b-2 border-transparent transition-all uppercase tracking-wider">
+                    <i class="fas fa-wallet mb-1 block text-lg"></i> Transactions
+                </button>
+            </div>
+
+            <!-- حاوية البيانات (الجداول ستظهر هنا) -->
+            <div class="p-6 overflow-y-auto flex-1 custom-scrollbar bg-[#121212] relative" id="history-content">
+                <!-- المحتوى الديناميكي -->
+            </div>
         </div>
     </div>
 
@@ -1267,6 +1311,7 @@ async function playCasinoGame(providerCode, gameCode, isEv) {
         localStorage.removeItem('player_token'); localStorage.removeItem('alpha_player_session');
         playerSession = null;
         if (window.balInterval) clearInterval(window.balInterval);
+        document.getElementById('sidebar-account-section')?.classList.add('hidden');
         document.getElementById('auth-buttons-container')?.classList.remove('hidden');
         document.getElementById('auth-buttons-container')?.classList.add('flex');
         document.getElementById('top-user-profile')?.classList.add('hidden');
@@ -1275,6 +1320,7 @@ async function playCasinoGame(providerCode, gameCode, isEv) {
 
     function setupLoggedInUI() {
         closeLoginModal();
+        document.getElementById('sidebar-account-section')?.classList.remove('hidden');
         document.getElementById('auth-buttons-container')?.classList.add('hidden');
         document.getElementById('auth-buttons-container')?.classList.remove('flex');
         document.getElementById('top-user-profile')?.classList.remove('hidden');
@@ -1385,6 +1431,87 @@ async function playCasinoGame(providerCode, gameCode, isEv) {
         // الـ eSports غالباً يكون مدمجاً داخل الـ Sportsbook
         showNotification("Redirection vers eSports... 🎮", "success");
         openSportsbookForProvider('SPORTSBOOK');
+    }
+
+    // ================= محرك السجلات (History Engine) =================
+
+    function openHistoryModal(tab) {
+        if (!playerSession) return openLoginModal();
+        
+        // إغلاق القائمة الجانبية إذا كانت مفتوحة
+        const profileSidebar = document.getElementById('profile-sidebar');
+        if (profileSidebar && !profileSidebar.classList.contains('translate-x-full')) {
+            toggleProfileSidebar();
+        }
+
+        document.getElementById('history-modal').classList.remove('hidden');
+        switchHistoryTab(tab);
+    }
+
+    function closeHistoryModal() {
+        document.getElementById('history-modal').classList.add('hidden');
+    }
+
+    function switchHistoryTab(tab) {
+        // إعادة تعيين ألوان جميع التبويبات
+        ['sports', 'casino', 'transactions'].forEach(t => {
+            let btn = document.getElementById('tab-' + t);
+            btn.classList.remove('text-[#00ff87]', 'border-[#00ff87]', 'bg-gray-800/30');
+            btn.classList.add('text-gray-500', 'border-transparent');
+        });
+
+        // تفعيل التبويب المختار
+        let activeBtn = document.getElementById('tab-' + tab);
+        activeBtn.classList.remove('text-gray-500', 'border-transparent');
+        activeBtn.classList.add('text-[#00ff87]', 'border-[#00ff87]', 'bg-gray-800/30');
+
+        const content = document.getElementById('history-content');
+        // شاشة التحميل الأنيقة
+        content.innerHTML = `
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <i class="fas fa-circle-notch fa-spin text-4xl text-[#00ff87] mb-4 shadow-[0_0_15px_rgba(0,255,135,0.5)] rounded-full"></i>
+                <p class="text-gray-400 font-bold uppercase tracking-widest text-xs animate-pulse">Recherche des données...</p>
+            </div>
+        `;
+
+        // هنا مستقبلاً ستضع دوال fetch لجلب البيانات من الباك إند.
+        // حالياً سنعرض واجهة "لا يوجد سجلات" بعد ثانية واحدة لتبدو المنصة تفاعلية.
+        setTimeout(() => {
+            renderEmptyHistory(tab);
+        }, 800);
+    }
+
+    function renderEmptyHistory(tab) {
+        const content = document.getElementById('history-content');
+        let icon, title, desc;
+
+        if (tab === 'sports') {
+            icon = 'fa-ticket-alt text-yellow-500';
+            title = 'Aucun Pari Sportif';
+            desc = 'Vous n\'avez pas encore placé de paris sportifs.';
+        } else if (tab === 'casino') {
+            icon = 'fa-history text-[#00ff87]';
+            title = 'Aucun Jeu Joué';
+            desc = 'Votre historique de casino est actuellement vide.';
+        } else {
+            icon = 'fa-exchange-alt text-blue-400';
+            title = 'Aucune Transaction';
+            desc = 'Aucun dépôt ou retrait n\'a été effectué pour le moment.';
+        }
+
+        content.innerHTML = `
+            <div class="h-full flex flex-col items-center justify-center text-center py-12">
+                <div class="w-24 h-24 bg-[#1a1c23] border border-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg">
+                    <i class="fas ${icon} text-4xl opacity-80"></i>
+                </div>
+                <h3 class="text-white font-black text-xl mb-2 uppercase tracking-wide">${title}</h3>
+                <p class="text-gray-500 font-bold text-sm max-w-sm mb-8">${desc}</p>
+                <button onclick="closeHistoryModal(); ${tab === 'sports' ? 'openSportsbookForProvider(\'SPORTSBOOK\')' : 'switchSection(\'casino\'); initCasinoLobby();'}" 
+                        class="bg-[#1a1c23] hover:bg-[#00ff87] border border-gray-700 hover:border-[#00ff87] text-white hover:text-black font-black py-3 px-8 rounded-full transition-all uppercase tracking-widest text-xs">
+                    Commencer à jouer
+                </button>
+            </div>
+        `;
     }
 </script>
 </body>

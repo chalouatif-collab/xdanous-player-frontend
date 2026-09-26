@@ -675,17 +675,18 @@
             <div id="sidebar-account-section" class="hidden border-t border-gray-800 pt-4 mt-2">
                 <h4 class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3 ml-1">Mon Compte</h4>
                 <div class="space-y-2">
-                    <button onclick="loadHistorySection('sports')"
+                    <!-- تمت إضافة type="button" و event.preventDefault() -->
+                    <button type="button" onclick="event.preventDefault(); loadHistorySection('sports');"
                         class="w-full flex items-center gap-3 bg-[#232630] hover:bg-gray-700 text-white p-3 rounded-lg transition font-bold text-sm">
                         <i class="fas fa-ticket-alt text-yellow-500 w-5 text-center"></i> Mes Paris
                     </button>
                     
-                    <button onclick="loadHistorySection('casino')"
+                    <button type="button" onclick="event.preventDefault(); loadHistorySection('casino');"
                         class="w-full flex items-center gap-3 bg-[#232630] hover:bg-gray-700 text-white p-3 rounded-lg transition font-bold text-sm">
                         <i class="fas fa-history text-[#00ff87] w-5 text-center"></i> Historique Casino
                     </button>
                     
-                    <button onclick="loadHistorySection('transactions')"
+                    <button type="button" onclick="event.preventDefault(); loadHistorySection('transactions');"
                         class="w-full flex items-center gap-3 bg-[#232630] hover:bg-gray-700 text-white p-3 rounded-lg transition font-bold text-sm">
                         <i class="fas fa-exchange-alt text-blue-400 w-5 text-center"></i> Transactions
                     </button>

@@ -702,19 +702,44 @@
         console.log("Ouverture Sport:", p);
     }
 </script>
-    <!-- ================= JAVASCRIPT (المحرك الهجين النهائي والكامل) ================= -->
+   <!-- ================= JAVASCRIPT (المحرك الهجين النهائي والكامل) ================= -->
 <script>
     const BACKEND_URL = "https://xdanous-backend-onrender-com.onrender.com";
     let playerSession = null;
     
     // ================= 1. ذواكر التخزين (Caches) =================
     window.allEVGamesCache = [];
-    window.nexusGamesCache = {}; // ذاكرة جديدة مخصصة لـ Nexus فقط
+    window.nexusGamesCache = {}; 
     window.currentProviderGames = [];
     window.allLoadedLiveGames = [];
-    
-    
-    
+    let currentDisplayLimit = 50;
+    let currentActiveProviderCode = "PRAGMATIC";
+    let gamesObserver = null;
+
+    // قائمة المزودين المعتمدة من API
+    window.nexusProviders = [
+        { code: 'PRAGMATIC', name: 'Pragmatic Slot' },
+        { code: 'HACKSAW', name: 'Hacksaw' },
+        { code: 'PLAYNGO', name: "Play'n Go" },
+        { code: 'PGSOFT', name: 'PGSoft' },
+        { code: 'HABANERO', name: 'Habanero' },
+        { code: 'PLAYSON', name: 'Playson' },
+        { code: 'EVOPLAY', name: 'Evoplay' },
+        { code: 'AMUSNET', name: 'Amusnet' },
+        { code: 'EGT', name: 'EGT Digital' },
+        { code: 'BOOONGO', name: 'Booongo' },
+        { code: 'CQ9', name: 'CQ9' },
+        { code: 'TOPTREND', name: 'TopTrend' },
+        { code: 'DREAMTECH', name: 'DreamTech' },
+        { code: 'FACHAI', name: 'FaChai' },
+        { code: 'SPADEGAMING', name: 'Spadegaming' },
+        { code: 'FASTSPIN', name: 'FastSpin' },
+        { code: 'JOKERGAMING', name: 'Joker Gaming' },
+        { code: 'RUBYPLAY', name: 'RubyPlay' },
+        { code: 'AMATIC', name: 'Amatic' },
+        { code: 'NEXTSPIN', name: 'Next Spin' },
+        { code: 'SPRIBE', name: 'Spribe' }
+    ];
     
     function escapeHTML(str) {
         if (!str) return '';
@@ -732,10 +757,8 @@
         const savedSection = localStorage.getItem('active_section') || 'accueil';
         switchSection(savedSection);
 
-        // تشغيل شريط الفائزين
         if (typeof generateLiveWinnersTicker === 'function') generateLiveWinnersTicker();
 
-        // جلب ألعاب EV في الخلفية، ثم تحميل ألعاب اليوم
         fetchEVGamesSilent().then(() => {
             if (savedSection === 'accueil') loadGamesOfTheDay();
         });
@@ -747,12 +770,9 @@
     };
 
     // ================= 3. محركات الجلب (Fetch Engines) =================
-    
-    // أ- محرك جلب ألعاب EuroVirtuals
     async function fetchEVGamesSilent() {
         if (window.allEVGamesCache.length > 0) return window.allEVGamesCache;
         try {
-            // تم التصحيح: استخدام BACKEND_URL الديناميكي
             const res = await fetch(`${BACKEND_URL}/api/get-eurovirtuals-games`);
             const data = await res.json();
             let games = data.data || data.games || data || [];
@@ -766,16 +786,13 @@
             }
             return window.allEVGamesCache;
         } catch (e) {
-            console.error("Erreur EV Fetch:", e);
             return [];
         }
     }
 
-    // ب- محرك جلب ألعاب Nexus
     async function fetchNexusGames(providerCode) {
         if (window.nexusGamesCache[providerCode]) return window.nexusGamesCache[providerCode];
         try {
-            // تم التصحيح: استخدام BACKEND_URL الديناميكي
             const res = await fetch(`${BACKEND_URL}/api/get-providers`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -789,27 +806,23 @@
             window.nexusGamesCache[providerCode] = mappedGames;
             return mappedGames;
         } catch (e) {
-            console.error(`Erreur Nexus Fetch (${providerCode}):`, e);
             return [];
         }
     }
 
-    // ================= 4. واجهة ألعاب اليوم (Accueil) =================
+    // ================= 4. واجهة ألعاب اليوم =================
     async function loadGamesOfTheDay() {
         const grid = document.getElementById('games-of-the-day-grid');
         if (!grid) return;
         grid.innerHTML = '<div class="col-span-full py-10 text-center"><i class="fas fa-circle-notch fa-spin text-[#00ff87] text-3xl mb-3"></i><p class="text-gray-500 text-xs font-bold uppercase tracking-widest">Chargement des jeux...</p></div>';
 
         let mixedGames = [];
-        
-        // جلب ألعاب Nexus الأساسية
         const pragmaticGames = await fetchNexusGames('PRAGMATIC');
         const hacksawGames = await fetchNexusGames('HACKSAW');
         
         if(pragmaticGames.length > 0) mixedGames.push(...pragmaticGames.slice(0, 6));
         if(hacksawGames.length > 0) mixedGames.push(...hacksawGames.slice(0, 4));
 
-        // جلب عينة من ألعاب EV
         if (window.allEVGamesCache.length > 0) {
             const evShuffled = [...window.allEVGamesCache].sort(() => 0.5 - Math.random()).slice(0, 4);
             mixedGames.push(...evShuffled);
@@ -823,320 +836,185 @@
         }
     }
 
-   // ================= قائمة المزودين المعتمدة من API =================
-        window.nexusProviders = [
-            { code: 'PRAGMATIC', name: 'Pragmatic Slot' },
-            { code: 'HACKSAW', name: 'Hacksaw' },
-            { code: 'PLAYNGO', name: "Play'n Go" },
-            { code: 'PGSOFT', name: 'PGSoft' },
-            { code: 'HABANERO', name: 'Habanero' },
-            { code: 'PLAYSON', name: 'Playson' },
-            { code: 'EVOPLAY', name: 'Evoplay' },
-            { code: 'AMUSNET', name: 'Amusnet' },
-            { code: 'EGT', name: 'EGT Digital' },
-            { code: 'BOOONGO', name: 'Booongo' },
-            { code: 'CQ9', name: 'CQ9' },
-            { code: 'TOPTREND', name: 'TopTrend' },
-            { code: 'DREAMTECH', name: 'DreamTech' },
-            { code: 'FACHAI', name: 'FaChai' },
-            { code: 'SPADEGAMING', name: 'Spadegaming' },
-            { code: 'FASTSPIN', name: 'FastSpin' },
-            { code: 'JOKERGAMING', name: 'Joker Gaming' },
-            { code: 'RUBYPLAY', name: 'RubyPlay' },
-            { code: 'AMATIC', name: 'Amatic' },
-            { code: 'NEXTSPIN', name: 'Next Spin' },
-            { code: 'SPRIBE', name: 'Spribe' }
-        ];
+    // ================= 5. الكازينو الشامل =================
+    async function initCasinoLobby() {
+        filterProviders();
 
-        let currentDisplayLimit = 50;
-        let currentActiveProviderCode = "PRAGMATIC";
-        let gamesObserver = null;
-
-        async function initCasinoLobby() {
-            // رسم القائمة المنسدلة فوراً بالاعتماد على القائمة الثابتة
-            filterProviders();
-
-            // تحميل ألعاب أول مزود في القائمة افتراضياً (Pragmatic)
-            if (window.nexusProviders && window.nexusProviders.length > 0) {
-                // وضع حالة تحميل في شبكة الألعاب
-                const grid = document.getElementById('games-grid');
-                if (grid) grid.innerHTML = '<div class="col-span-full text-emerald text-center py-10 animate-pulse text-lg font-bold">Chargement des jeux... 🎰</div>';
-                
-                loadProviderGames(window.nexusProviders[0].code, window.nexusProviders[0].name);
-            }
-        }
-
-        function filterProviders() {
-            const input = document.getElementById('provider-search-input');
-            const list = document.getElementById('provider-dropdown-list');
-            if (!list || !window.nexusProviders) return;
-
-            const term = input ? input.value.toLowerCase().trim() : "";
-            const filtered = window.nexusProviders.filter(p =>
-                String(p.name || p.code || "").toLowerCase().includes(term)
-            );
-
-            if (filtered.length === 0) {
-                 list.innerHTML = '<div class="p-3 text-xs text-gray-500 text-center font-bold">Aucun fournisseur trouvé</div>';
-                 return;
-            }
-
-            // حماية الأسماء التي تحتوي على فواصل عليا (مثل Play'n Go) لمنع تعطل الواجهة
-            list.innerHTML = filtered.map(p => {
-                const safeNameJS = String(p.name).replace(/'/g, "\\'");
-                const safeNameHTML = escapeHTML(p.name);
-                
-                return `<button onclick="loadProviderGames('${p.code}', '${safeNameJS}'); toggleProviderDropdown();" class="text-left px-4 py-3 text-xs font-bold text-gray-300 hover:text-emerald hover:bg-[#212631] rounded-xl transition-all border border-transparent hover:border-[#2e3648] w-full block truncate">${safeNameHTML}</button>`;
-            }).join('');
-        }
-
-            if (filtered.length === 0) {
-                 list.innerHTML = '<div class="p-3 text-xs text-gray-500 text-center font-bold">Aucun fournisseur trouvé</div>';
-                 return;
-            }
-
-            // 💡 السر هنا: استخدام replace لحماية الأسماء التي تحتوي فواصل عليا مثل Play'n Go
-            list.innerHTML = filtered.map(p => {
-                const safeNameJS = String(p.name).replace(/'/g, "\\'");
-                const safeNameHTML = escapeHTML(p.name);
-                
-                return `<button onclick="loadProviderGames('${p.code}', '${safeNameJS}'); toggleProviderDropdown();" class="text-left px-4 py-3 text-xs font-bold text-gray-300 hover:text-emerald hover:bg-[#212631] rounded-xl transition-all border border-transparent hover:border-[#2e3648] w-full block truncate">${safeNameHTML}</button>`;
-            }).join('');
-        
-           async function loadProviderGames(providerCode, providerName = null) {
-            currentActiveProviderCode = providerCode;
-            currentDisplayLimit = 50;
-
+        if (window.nexusProviders && window.nexusProviders.length > 0) {
             const grid = document.getElementById('games-grid');
-            const label = document.getElementById('current-provider-label');
-
-            if (providerName && label) label.innerText = providerName;
-
-            const searchInput = document.getElementById('game-search-input');
-            if (searchInput) searchInput.value = '';
-
             if (grid) grid.innerHTML = '<div class="col-span-full text-emerald text-center py-10 animate-pulse text-lg font-bold">Chargement des jeux... 🎰</div>';
-
-            try {
-                const res = await fetch(`${BACKEND_URL}/api/get-providers`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ provider_code: providerCode })
-                });
-
-                if (!res.ok) throw new Error("HTTP Status: " + res.status);
-                
-                const data = await res.json();
-                
-                let gamesList = [];
-                if (data.status === 1 && data.games) {
-                    gamesList = data.games;
-                } else if (data.data) {
-                    gamesList = data.data;
-                } else if (Array.isArray(data)) {
-                    gamesList = data;
-                } else {
-                    throw new Error("Format de données inattendu du serveur");
-                }
-
-                // 💡 السر هنا: عكس المصفوفة لتظهر الألعاب المضافة حديثاً في أعلى الصفحة
-                window.currentProviderGames = gamesList.reverse();
-
-                renderCasinoGrid();
-            } catch (e) {
-                console.error("=== خطأ جلب الألعاب ===", e);
-                if (grid) grid.innerHTML = `<div class="col-span-full text-red-500 text-center py-10 font-bold">Erreur de connexion<br><span class="text-xs text-gray-500 font-mono mt-2 block">${e.message}</span></div>`;
-            }
+            loadProviderGames(window.nexusProviders[0].code, window.nexusProviders[0].name);
         }
-    // رسم الشبكة والتمرير اللانهائي (Infinite Scroll)
-            function renderCasinoGrid() {
-            const container = document.getElementById('games-grid');
-            if (!container) return;
+    }
 
-            if (window.currentProviderGames.length === 0) {
-                container.innerHTML = '<div class="col-span-full text-gray-500 text-center py-10">Aucun jeu trouvé.</div>';
-                return;
-            }
-
-            const gamesToDisplay = window.currentProviderGames.slice(0, currentDisplayLimit);
-
-            container.innerHTML = gamesToDisplay.map(g => {
-                const title = escapeHTML(String(g.game_name || g.name || "Game"));
-                const img = g.banner || g.image || g.thumb || `https://placehold.co/400x400/180A2B/10b981?text=${encodeURIComponent(title.substring(0, 15))}`;
-                const code = g.game_code || g.id;
-
-                return `
-                <div onclick="playCasinoGame('${currentActiveProviderCode}', '${code}')" class="bg-[#0f1117] border border-[#212631] rounded-xl overflow-hidden cursor-pointer hover:border-emerald transition-all flex flex-col group shadow-lg">
-                    <div class="relative w-full aspect-square overflow-hidden bg-[#161922]">
-                        <img src="${img}" alt="${title}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/400x400/180A2B/10b981?text=${encodeURIComponent(title.substring(0, 15))}';">
-                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
-                            <span class="bg-emerald text-black text-[10px] font-bold px-4 py-2 rounded-full shadow-lg">JOUER</span>
-                        </div>
-                    </div>
-                    <div class="p-2 text-[10px] text-white font-bold truncate text-center">${title}</div>
-                </div>`;
-            }).join('');
-
-            let sentinel = document.getElementById('games-scroll-sentinel');
-
-            if (currentDisplayLimit < window.currentProviderGames.length) {
-                if (!sentinel) {
-                    sentinel = document.createElement('div');
-                    sentinel.id = 'games-scroll-sentinel';
-                    sentinel.className = 'col-span-full text-center py-6 text-emerald font-display animate-pulse text-xs font-bold';
-                    sentinel.innerHTML = 'Chargement de plus de jeux... ⏳';
-                    container.parentNode.appendChild(sentinel);
-                }
-
-                if (!gamesObserver) {
-                    gamesObserver = new IntersectionObserver((entries) => {
-                        entries.forEach(entry => {
-                            if (entry.isIntersecting && currentDisplayLimit < window.currentProviderGames.length) {
-                                currentDisplayLimit += 50;
-                                renderCasinoGrid();
-                            }
-                        });
-                    }, { rootMargin: '300px' });
-                }
-                gamesObserver.observe(sentinel);
-            } else if (sentinel) {
-                sentinel.remove();
-            }
-        }
-
-    // ================= 6. وظائف البحث والقوائم المنسدلة =================
     function toggleProviderDropdown() {
         const d = document.getElementById('provider-dropdown');
         if(d) { d.classList.toggle('hidden'); d.classList.toggle('flex'); }
     }
 
-            function filterProviders() {
-            const input = document.getElementById('provider-search-input');
-            const list = document.getElementById('provider-dropdown-list');
-            if (!list || !window.nexusProviders) return;
+    function filterProviders() {
+        const input = document.getElementById('provider-search-input');
+        const list = document.getElementById('provider-dropdown-list');
+        if (!list || !window.nexusProviders) return;
 
-            const term = input ? input.value.toLowerCase() : "";
-            const filtered = window.nexusProviders.filter(p =>
-                String(p.name || p.code || "").toLowerCase().includes(term)
-            );
+        const term = input ? input.value.toLowerCase().trim() : "";
+        const filtered = window.nexusProviders.filter(p => String(p.name || p.code || "").toLowerCase().includes(term));
 
-            list.innerHTML = filtered.map(p =>
-                `<button onclick="loadProviderGames('${p.code}', '${p.name}'); toggleProviderDropdown();" class="text-left px-4 py-3 text-xs font-bold text-gray-300 hover:text-emerald hover:bg-[#212631] rounded-xl transition-all border border-transparent hover:border-[#2e3648]">${p.name}</button>`
-            ).join('');
+        if (filtered.length === 0) {
+            list.innerHTML = '<div class="p-3 text-xs text-gray-500 text-center font-bold">Aucun fournisseur trouvé</div>';
+            return;
         }
-// ================ البحث عن الألعاب =================
-        function filterGames() {
-            const input = document.getElementById('game-search-input');
-            if (!input || !window.currentProviderGames) return;
 
-            const term = input.value.toLowerCase();
-            const filtered = window.currentProviderGames.filter(g =>
-                String(g.game_name || g.name || "").toLowerCase().includes(term)
-            );
-
-            const container = document.getElementById('games-grid');
-            if (!container) return;
-
-            if (filtered.length === 0) {
-                container.innerHTML = '<div class="col-span-full text-gray-500 text-center py-10">Aucun jeu trouvé.</div>';
-                return;
-            }
-
-            container.innerHTML = filtered.map(g => {
-                const title = String(g.game_name || g.name || "Game");
-                const img = g.banner || g.image || g.thumb || `https://placehold.co/400x400/180A2B/10b981?text=${encodeURIComponent(title.substring(0, 15))}`;
-                const code = g.game_code || g.id;
-
-                return `
-                <div onclick="playCasinoGame('${currentActiveProviderCode}', '${code}')" class="bg-[#0f1117] border border-[#212631] rounded-xl overflow-hidden cursor-pointer hover:border-emerald transition-all flex flex-col group shadow-lg">
-                    <div class="relative w-full aspect-square overflow-hidden bg-[#161922]">
-                        <img src="${img}" alt="${title}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/400x400/180A2B/10b981?text=${encodeURIComponent(title.substring(0, 15))}';">
-                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
-                            <span class="bg-emerald text-black text-[10px] font-bold px-4 py-2 rounded-full shadow-lg">JOUER</span>
-                        </div>
-                    </div>
-                    <div class="p-2 text-[10px] text-white font-bold truncate text-center">${title}</div>
-                </div>`;
-            }).join('');
-
-            const sentinel = document.getElementById('games-scroll-sentinel');
-            if (sentinel) sentinel.remove();
-        }
-    async function openLiveCasino(providerCode = 'PP_LIVE_PRO') {
-    const grid = document.getElementById('live-games-grid');
-    if (grid) grid.innerHTML = '<div class="col-span-full text-red-500 text-center py-10 animate-pulse">Chargement des tables... 🔴</div>';
-    
-    // بناء شريط المزودين المباشرين للفلترة
-    const liveBar = document.getElementById('live-providers-bar');
-    if (liveBar) {
-        liveBar.innerHTML = `
-            <button onclick="openLiveCasino('PP_LIVE_PRO')" class="px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${providerCode === 'PP_LIVE_PRO' ? 'bg-red-500 text-white shadow-md' : 'bg-[#1a1e29] text-gray-300 hover:text-white'}">Pragmatic Live</button>
-            <button onclick="openLiveCasino('EVO_LIVE')" class="px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${providerCode === 'EVO_LIVE' ? 'bg-red-500 text-white shadow-md' : 'bg-[#1a1e29] text-gray-300 hover:text-white'}">Evolution Live</button>
-        `;
+        list.innerHTML = filtered.map(p => {
+            const safeNameJS = String(p.name).replace(/'/g, "\\'");
+            const safeNameHTML = escapeHTML(p.name);
+            return `<button onclick="loadProviderGames('${p.code}', '${safeNameJS}'); toggleProviderDropdown();" class="text-left px-4 py-3 text-xs font-bold text-gray-300 hover:text-white hover:bg-gray-800 rounded-xl transition-all border border-transparent hover:border-[#2e3648] w-full block truncate">${safeNameHTML}</button>`;
+        }).join('');
     }
 
-    try {
-        const res = await fetch(`${BACKEND_URL}/api/get-providers`, {
-            method: 'POST', 
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ provider_code: providerCode })
-        });
-        const data = await res.json();
-        
-        // 💡 قراءة البيانات بذكاء بغض النظر عن شكل رد السيرفر
-        let gamesList = [];
-        if (data.status === 1 && data.games) gamesList = data.games;
-        else if (data.data) gamesList = data.data;
-        else if (Array.isArray(data)) gamesList = data;
+    async function loadProviderGames(providerCode, providerName = null) {
+        currentActiveProviderCode = providerCode;
+        currentDisplayLimit = 50;
 
-        if (grid) {
-            if (gamesList.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-gray-500 text-center py-10 font-bold">Aucune table disponible pour ce fournisseur.</div>';
-                return;
-            }
+        const grid = document.getElementById('games-grid');
+        const label = document.getElementById('current-provider-label');
+
+        if (providerName && label) label.innerText = providerName;
+
+        const searchInput = document.getElementById('game-search-input');
+        if (searchInput) searchInput.value = '';
+
+        if (grid) grid.innerHTML = '<div class="col-span-full text-[#00ff87] text-center py-10 animate-pulse text-lg font-bold">Chargement des jeux... 🎰</div>';
+
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/get-providers`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ provider_code: providerCode })
+            });
+
+            if (!res.ok) throw new Error("Erreur Serveur");
             
-            grid.innerHTML = gamesList.map(g => {
-                const title = escapeHTML(String(g.game_name || g.name || "Live Table"));
-                const img = g.banner || g.image || g.thumb || 'https://placehold.co/400x400/180A2B/FFF?text=Live+Casino';
-                const code = g.game_code || g.id;
-                
-                return `
-                <div onclick="playCasinoGame('${providerCode}', '${code}')" class="bg-[#0f1117] border border-[#212631] rounded-xl overflow-hidden cursor-pointer hover:border-red-500 transition-all relative flex flex-col group shadow-lg">
-                    <div class="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-black px-2 py-0.5 z-10 animate-pulse rounded-bl">LIVE</div>
-                    <div class="relative w-full aspect-square overflow-hidden bg-[#161922]">
-                        <img src="${img}" alt="${title}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/400x400/180A2B/FFF?text=Live';">
-                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 z-10">
-                            <span class="bg-red-500 text-white text-[10px] font-bold px-4 py-2 rounded-full shadow-lg">REJOINDRE</span>
-                        </div>
-                    </div>
-                    <div class="p-2 text-[10px] text-white font-bold truncate text-center">${title}</div>
-                </div>`;
-            }).join('');
+            const data = await res.json();
+            
+            let gamesList = [];
+            if (data.status === 1 && data.games) gamesList = data.games;
+            else if (data.data) gamesList = data.data;
+            else if (Array.isArray(data)) gamesList = data;
+
+            window.currentProviderGames = gamesList.reverse();
+            renderCasinoGrid();
+        } catch (e) {
+            if (grid) grid.innerHTML = `<div class="col-span-full text-red-500 text-center py-10 font-bold">Erreur de connexion</div>`;
         }
-    } catch (e) {
-        if (grid) grid.innerHTML = '<div class="col-span-full text-red-500 text-center py-10 font-bold">Erreur de connexion au live.</div>';
-    }
-}
-    function filterLiveGames(provider) {
-        if (!window.allLoadedLiveGames) return;
-        let filtered = provider === 'All' ? window.allLoadedLiveGames : window.allLoadedLiveGames.filter(g => g.provider === provider);
-        renderLiveGamesList(filtered);
     }
 
-    function renderLiveGamesList(arr) {
+    function renderCasinoGrid() {
+        const container = document.getElementById('games-grid');
+        if (!container) return;
+
+        if (window.currentProviderGames.length === 0) {
+            container.innerHTML = '<div class="col-span-full text-gray-500 text-center py-10">Aucun jeu trouvé.</div>';
+            return;
+        }
+
+        const gamesToDisplay = window.currentProviderGames.slice(0, currentDisplayLimit);
+        container.innerHTML = gamesToDisplay.map(g => createGameCard(g)).join('');
+
+        let sentinel = document.getElementById('games-scroll-sentinel');
+        if (currentDisplayLimit < window.currentProviderGames.length) {
+            if (!sentinel) {
+                sentinel = document.createElement('div');
+                sentinel.id = 'games-scroll-sentinel';
+                sentinel.className = 'col-span-full text-center py-6 text-[#00ff87] animate-pulse text-xs font-bold';
+                sentinel.innerHTML = 'Chargement... ⏳';
+                container.parentNode.appendChild(sentinel);
+            }
+
+            if (!gamesObserver) {
+                gamesObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting && currentDisplayLimit < window.currentProviderGames.length) {
+                            currentDisplayLimit += 50;
+                            renderCasinoGrid();
+                        }
+                    });
+                }, { rootMargin: '300px' });
+            }
+            gamesObserver.observe(sentinel);
+        } else if (sentinel) {
+            sentinel.remove();
+        }
+    }
+
+    function filterGames() {
+        const input = document.getElementById('game-search-input');
+        const container = document.getElementById('games-grid');
+        if (!input || !container) return;
+
+        const term = input.value.toLowerCase();
+        const filtered = window.currentProviderGames.filter(g => String(g.game_name || g.name || "").toLowerCase().includes(term));
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="col-span-full text-gray-500 text-center py-10">Aucun jeu trouvé.</div>';
+            return;
+        }
+
+        container.innerHTML = filtered.slice(0, 50).map(g => createGameCard(g)).join('');
+        const s = document.getElementById('games-scroll-sentinel');
+        if (s) s.remove();
+    }
+
+    // ================= 6. الكازينو المباشر =================
+    async function openLiveCasino(providerCode = 'PP_LIVE_PRO') {
         const grid = document.getElementById('live-games-grid');
-        if(grid) grid.innerHTML = arr.length > 0 ? arr.map(g => createGameCard(g, true)).join('') : '<div class="col-span-full text-center text-gray-500 py-10">Aucune table</div>';
+        if (grid) grid.innerHTML = '<div class="col-span-full text-red-500 text-center py-10 animate-pulse">Chargement des tables... 🔴</div>';
+        
+        const liveBar = document.getElementById('live-providers-bar');
+        if (liveBar) {
+            liveBar.innerHTML = `
+                <button onclick="openLiveCasino('PP_LIVE_PRO')" class="px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${providerCode === 'PP_LIVE_PRO' ? 'bg-red-500 text-white shadow-md' : 'bg-[#1a1e29] border border-gray-700 text-gray-300 hover:text-white'}">Pragmatic Live</button>
+                <button onclick="openLiveCasino('EVO_LIVE')" class="px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${providerCode === 'EVO_LIVE' ? 'bg-red-500 text-white shadow-md' : 'bg-[#1a1e29] border border-gray-700 text-gray-300 hover:text-white'}">Evolution Live</button>
+            `;
+        }
+
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/get-providers`, {
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ provider_code: providerCode })
+            });
+            const data = await res.json();
+            
+            let gamesList = [];
+            if (data.status === 1 && data.games) gamesList = data.games;
+            else if (data.data) gamesList = data.data;
+            else if (Array.isArray(data)) gamesList = data;
+
+            window.allLoadedLiveGames = gamesList;
+
+            if (grid) {
+                if (gamesList.length === 0) {
+                    grid.innerHTML = '<div class="col-span-full text-gray-500 text-center py-10 font-bold">Aucune table disponible.</div>';
+                    return;
+                }
+                grid.innerHTML = gamesList.map(g => createGameCard(g, true)).join('');
+            }
+        } catch (e) {
+            if (grid) grid.innerHTML = '<div class="col-span-full text-red-500 text-center py-10 font-bold">Erreur de connexion.</div>';
+        }
     }
 
     function searchLiveGames() {
         const input = document.getElementById('live-search-input');
-        if(!input || !window.allLoadedLiveGames) return;
+        const grid = document.getElementById('live-games-grid');
+        if(!input || !window.allLoadedLiveGames || !grid) return;
         const term = input.value.toLowerCase();
         const filtered = window.allLoadedLiveGames.filter(g => String(g.game_name || g.name || "").toLowerCase().includes(term));
-        renderLiveGamesList(filtered);
+        grid.innerHTML = filtered.length > 0 ? filtered.map(g => createGameCard(g, true)).join('') : '<div class="col-span-full text-center text-gray-500 py-10">Aucune table</div>';
     }
 
-    // ================= 8. الألعاب الافتراضية =================
+    // ================= 7. الألعاب الافتراضية =================
     async function initVirtualsLobby() {
         const grid = document.getElementById('virtuals-games-grid');
         if (!grid) return;
@@ -1152,7 +1030,7 @@
         }
     }
 
-    // ================= 9. إنشاء الكروت ومحرك إطلاق الألعاب الذكي =================
+    // ================= 8. بناء الكروت وإطلاق الألعاب =================
     function createGameCard(g, isLiveForce = false) {
         const title = escapeHTML(String(g.game_name || g.name || "Game"));
         const isLive = isLiveForce || title.toLowerCase().includes('live');
@@ -1174,14 +1052,13 @@
                 <div class="relative w-full pt-[100%] overflow-hidden bg-[#121212]">
                     <img src="${img}" alt="${title}" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/400x400/121212/333?text=Jeu';">
                     <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 z-10">
-                        <span class="${btnColor} text-white text-[10px] font-bold px-4 py-2 rounded-full">JOUER</span>
+                        <span class="${btnColor} text-white text-[10px] font-bold px-4 py-2 rounded-full shadow-md">JOUER</span>
                     </div>
                 </div>
                 <div class="p-2 text-[10px] text-white font-bold truncate text-center">${title}</div>
             </div>`;
     }
 
-    // ج- المحرك الذكي للإطلاق
     async function playCasinoGame(providerCode, gameCode, isEv) {
         if (!playerSession) return openLoginModal();
         
@@ -1194,7 +1071,6 @@
         }
 
         try {
-            // تم التصحيح: استخدام BACKEND_URL الديناميكي
             let endpointUrl = isEv ? `${BACKEND_URL}/api/provider/launch-eurovirtuals` : `${BACKEND_URL}/api/provider/launch-casino`;
             let requestBody = isEv ? 
                 { user_code: playerSession.username, game_uuid: gameCode } : 
@@ -1220,6 +1096,7 @@
             showNotification("Erreur réseau", "error");
         }
     }
+
     function closeCasinoGame() {
         const container = document.getElementById('casino-iframe-container');
         const iframe = document.getElementById('casino-iframe');
@@ -1228,7 +1105,7 @@
         refreshBalance();
     }
 
-    // ================= 10. شريط الفائزين (Gagnants Ticker) =================
+    // ================= 9. التيكر والتحقق =================
     function generateLiveWinnersTicker() {
         const track = document.getElementById('winners-ticker-track');
         if (!track) return;
@@ -1248,7 +1125,6 @@
         track.innerHTML = tickerHTML + tickerHTML;
     }
 
-    // ================= 11. أنظمة تسجيل الدخول والمستخدم =================
     async function handlePlayerAuth() {
         const user = document.getElementById('p-auth-username').value;
         const pass = document.getElementById('p-auth-password').value;
@@ -1342,3 +1218,5 @@
         setTimeout(() => { toast.classList.add('translate-x-full'); setTimeout(() => toast.remove(), 300); }, 3000);
     }
 </script>
+</body>
+</html>

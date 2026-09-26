@@ -629,90 +629,34 @@
         </div>
     </div>
 
-    <script>
-        // ================= التبديل بين الأقسام =================
-        function switchSection(sectionId) {
-            document.querySelectorAll('.player-view-section').forEach(el => {
-                el.classList.remove('block');
-                el.classList.add('hidden');
-            });
-            const activeSec = document.getElementById(`pane-${sectionId}`);
-            if (activeSec) {
-                activeSec.classList.remove('hidden');
-                activeSec.classList.add('block');
-            }
-        }
-
-        function setActiveMenuBtn(activeBtnId) {
-            // 1. إعادة كل الأزرار للحالة الطبيعية غير النشطة (نص رمادي وإطار رمادي داكن)
-            document.querySelectorAll('.main-nav-btn').forEach(btn => {
-                btn.className = "main-nav-btn flex items-center justify-center gap-2 px-4 py-1.5 md:py-2 text-gray-400 hover:text-white border border-gray-700 bg-transparent rounded-full transition-all shrink-0 text-xs md:text-sm font-bold";
-            });
-
-            // 2. تلوين الزر النشط باللون الأخضر الفوسفوري (Neon Green)
-            const activeBtn = document.getElementById(activeBtnId);
-            if (activeBtn) {
-                // إضافة الإطار الفوسفوري، النص الفوسفوري، وخلفية شفافة جداً من نفس اللون مع توهج خفيف
-                activeBtn.className = "main-nav-btn flex items-center justify-center gap-2 px-4 py-1.5 md:py-2 text-[#00ff87] border border-[#00ff87] bg-[#00ff87]/10 rounded-full transition-all shrink-0 text-xs md:text-sm font-bold shadow-[0_0_10px_rgba(0,255,135,0.15)]";
-
-                // تمرير ذكي ليصبح الزر النشط في منتصف الشاشة (مفيد جداً للهواتف)
-                activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            }
-        }
-        // ================= النوافذ الجانبية =================
-        function toggleProfileSidebar() {
-            const sidebar = document.getElementById('profile-sidebar');
-            const overlay = document.getElementById('profile-overlay');
-            if (sidebar.classList.contains('translate-x-full')) {
-                sidebar.classList.remove('translate-x-full');
-                overlay.classList.remove('hidden');
-            } else {
-                sidebar.classList.add('translate-x-full');
-                overlay.classList.add('hidden');
-            }
-        }
-
-        function openLoginModal() {
-            const m = document.getElementById('player-login-modal');
-            m.classList.remove('hidden'); m.classList.add('flex');
-        }
-        function closeLoginModal() {
-            const m = document.getElementById('player-login-modal');
-            m.classList.add('hidden'); m.classList.remove('flex');
-        }
-
-        // Functions mock for the buttons
-        function openSportsbookForProvider(p) { console.log("Sport: " + p); }
-        function initCasinoLobby() { console.log("Casino Init"); }
-        function openLiveCasino() { console.log("Live Casino Init"); }
-        function initVirtualsLobby() { console.log("Virtuals Init"); }
-        function logoutPlayer() { console.log("Logout"); }
-    </script>
-</body>
-
-</html>
-
-<!-- ================= JAVASCRIPT (محرك EuroVirtuals النهائي والمضمون) ================= -->
+    <!-- ================= JAVASCRIPT (المحرك الهجين النهائي والكامل) ================= -->
 <script>
     const BACKEND_URL = "https://xdanous-backend-onrender-com.onrender.com";
     let playerSession = null;
     
-    // متغيرات الذاكرة الشاملة
+    // ================= 1. ذواكر التخزين (Caches) =================
     window.allEVGamesCache = [];
+    window.nexusGamesCache = {}; // ذاكرة جديدة مخصصة لـ Nexus فقط
     window.currentProviderGames = [];
     window.allLoadedLiveGames = [];
     let currentDisplayLimit = 50;
-    let currentActiveProviderCode = "ALL";
-    window.fetchPromise = null; 
+    let currentActiveProviderCode = "PRAGMATIC"; // المزود الافتراضي
+    
+    // قائمة مزودي Nexus الثابتة
+    window.nexusProviders = [
+        { code: 'PRAGMATIC', name: 'Pragmatic Play' },
+        { code: 'HACKSAW', name: 'Hacksaw Gaming' },
+        { code: 'PLAYNGO', name: "Play'n Go" },
+        { code: 'NOLIMIT', name: 'Nolimit City' },
+        { code: 'NETENT', name: 'NetEnt' }
+    ];
 
     function escapeHTML(str) {
         if (!str) return '';
-        return str.toString().replace(/[&<>'"]/g,
-            tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-        );
+        return str.toString().replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
     }
 
-    // ================= 1. الإقلاع =================
+    // ================= 2. الإقلاع =================
     window.onload = () => {
         const savedSession = localStorage.getItem('alpha_player_session');
         if (savedSession) {
@@ -723,11 +667,12 @@
         const savedSection = localStorage.getItem('active_section') || 'accueil';
         switchSection(savedSection);
 
-        if (typeof generateLiveWinnersTicker === 'function') generateLiveWinnersTicker();
+        // تشغيل شريط الفائزين
+        generateLiveWinnersTicker();
 
-        // تشغيل محرك الجلب الشامل فوراً
-        fetchAllEVGames().then(() => {
-            if (savedSection === 'accueil' && typeof loadGamesOfTheDay === 'function') loadGamesOfTheDay();
+        // جلب ألعاب EV في الخلفية، ثم تحميل ألعاب اليوم
+        fetchEVGamesSilent().then(() => {
+            if (savedSection === 'accueil') loadGamesOfTheDay();
         });
 
         window.addEventListener('popstate', (event) => {
@@ -736,161 +681,136 @@
         });
     };
 
-    // ================= 2. محرك الجلب المركزي (الذاكرة التراكمية الذكية) =================
+    // ================= 3. محركات الجلب (Fetch Engines) =================
     
-    async function fetchAllEVGames() {
+    // أ- محرك جلب ألعاب EuroVirtuals
+    async function fetchEVGamesSilent() {
         if (window.allEVGamesCache.length > 0) return window.allEVGamesCache;
-
-        // 💡 حماية قراءة التخزين لمنع انهيار السكريبت على الهواتف
-        try {
-            const cachedData = localStorage.getItem('ev_games_cache_final');
-            if (cachedData) {
-                window.allEVGamesCache = JSON.parse(cachedData);
-                const loadedProviders = [...new Set(window.allEVGamesCache.map(g => g.provider))];
-                if (loadedProviders.length < 25 && !window.fetchPromise) {
-                    window.fetchPromise = fetchGamesFromServerSilent();
-                }
-                return window.allEVGamesCache;
-            }
-        } catch (e) {
-            console.warn("Storage read blocked by mobile browser.");
-        }
-
-        if (!window.fetchPromise) {
-            window.fetchPromise = fetchGamesFromServerSilent();
-        }
-        return await window.fetchPromise;
-    }
-
-    async function fetchGamesFromServerSilent() {
         try {
             const res = await fetch(`${BACKEND_URL}/api/get-eurovirtuals-games`);
             const data = await res.json();
+            let games = data.data || data.games || data || [];
             
-            let combinedGames = [];
-            if (data.status === "success" && data.data) {
-                combinedGames = data.data;
-            } else if (Array.isArray(data)) {
-                combinedGames = data;
-            } else if (data.games) {
-                combinedGames = data.games;
-            }
-
-            if (combinedGames.length > 0) {
-                combinedGames = combinedGames.map(g => ({
+            if (games.length > 0) {
+                window.allEVGamesCache = games.map(g => ({
                     ...g, 
-                    provider: g.provider || g.provider_name || g.provider_code || g.vendor || 'EV_Game'
+                    provider: g.provider || g.provider_name || 'EV_Game',
+                    is_ev: true // ختم اللعبة بأنها تابعة لـ EV
                 }));
-                
-                window.allEVGamesCache = combinedGames;
-                
-                // 💡 حماية كتابة التخزين لمنع توقف السكريبت
-                try {
-                    localStorage.setItem('ev_games_cache_final', JSON.stringify(combinedGames)); 
-                } catch (err) {
-                    console.warn("Storage write blocked by mobile browser, skipping cache.");
-                }
             }
-            
             return window.allEVGamesCache;
         } catch (e) {
-            console.error("Erreur Fetch:", e);
-            return window.allEVGamesCache;
-        } finally {
-            window.fetchPromise = null;
-            if (document.getElementById('games-grid')?.innerHTML.includes('fa-spin')) initCasinoLobby();
-            if (document.getElementById('live-games-grid')?.innerHTML.includes('fa-spin')) openLiveCasino();
-            if (document.getElementById('games-of-the-day-grid')?.innerHTML.includes('fa-spin')) loadGamesOfTheDay();
+            console.error("Erreur EV Fetch:", e);
+            return [];
         }
     }
-    
-    // ================= دالة جديدة: تحديث الواجهة بصمت (ضعها تحت دالة fetchGamesFromServerSilent مباشرة) =================
-    function updateUIQuietly() {
-        // تحديث قائمة الكازينو المنسدلة فقط إذا كان اللاعب يرى "كل المزودين"
-        if (document.getElementById('provider-dropdown-list') && currentActiveProviderCode === "ALL") {
-            const liveKeywords = ['LIVE', 'EVOLUTION', 'EZUGI', 'TVBET', 'VIVO'];
-            const casinoGames = window.allEVGamesCache.filter(g => !liveKeywords.some(kw => String(g.provider || '').toUpperCase().includes(kw)));
+
+    // ب- محرك جلب ألعاب Nexus (مع خاصية الذاكرة Cache)
+    async function fetchNexusGames(providerCode) {
+        if (window.nexusGamesCache[providerCode]) return window.nexusGamesCache[providerCode];
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/get-providers`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ provider_code: providerCode })
+            });
+            const data = await res.json();
+            let games = data.games || data.data || [];
+            if (!Array.isArray(games)) games = [];
             
-            // تحديث قائمة الألعاب الحالية لتشمل الألعاب الجديدة
-            window.currentProviderGames = casinoGames;
-            
-            // إعادة بناء القائمة المنسدلة بأسماء المزودين الجديدة
-            const uniqueProviders = [...new Set(casinoGames.map(g => g.provider || 'EV Games'))].sort();
-            const dropdownList = document.getElementById('provider-dropdown-list');
-            
-            dropdownList.innerHTML = `<button onclick="loadProviderGames('ALL', 'Tous les fournisseurs'); toggleProviderDropdown();" class="text-left px-4 py-3 text-xs font-bold text-[#00ff87] hover:bg-gray-800 transition">Tous les fournisseurs</button>` + 
-            uniqueProviders.map(p => `<button onclick="loadProviderGames('${escapeHTML(p)}', '${escapeHTML(p)}'); toggleProviderDropdown();" class="text-left px-4 py-3 text-xs font-bold text-gray-300 hover:text-white hover:bg-gray-800 transition border-b border-gray-800">${escapeHTML(p)}</button>`).join('');
-            
-            // إعادة رسم شبكة الألعاب لتعرض الألعاب التي وصلت للتو
-            renderCasinoGrid();
+            // ختم اللعبة بأنها تابعة لـ Nexus
+            const mappedGames = games.map(g => ({ ...g, provider: providerCode, is_ev: false }));
+            window.nexusGamesCache[providerCode] = mappedGames;
+            return mappedGames;
+        } catch (e) {
+            console.error(`Erreur Nexus Fetch (${providerCode}):`, e);
+            return [];
         }
     }
-    // ================= 3. واجهة ألعاب اليوم =================
+
+    // ================= 4. واجهة ألعاب اليوم (Accueil) =================
     async function loadGamesOfTheDay() {
         const grid = document.getElementById('games-of-the-day-grid');
         if (!grid) return;
-
         grid.innerHTML = '<div class="col-span-full py-10 text-center"><i class="fas fa-circle-notch fa-spin text-[#00ff87] text-3xl mb-3"></i><p class="text-gray-500 text-xs font-bold uppercase tracking-widest">Chargement des jeux...</p></div>';
 
-        const allGames = await fetchAllEVGames();
+        let mixedGames = [];
         
-        if (allGames.length > 0) {
-            const shuffled = [...allGames].sort(() => 0.5 - Math.random()).slice(0, 12);
-            grid.innerHTML = shuffled.map(g => createGameCard(g)).join('');
+        // جلب ألعاب Nexus الأساسية
+        const pragmaticGames = await fetchNexusGames('PRAGMATIC');
+        const hacksawGames = await fetchNexusGames('HACKSAW');
+        
+        if(pragmaticGames.length > 0) mixedGames.push(...pragmaticGames.slice(0, 6));
+        if(hacksawGames.length > 0) mixedGames.push(...hacksawGames.slice(0, 4));
+
+        // جلب عينة من ألعاب EV
+        if (window.allEVGamesCache.length > 0) {
+            const evShuffled = [...window.allEVGamesCache].sort(() => 0.5 - Math.random()).slice(0, 4);
+            mixedGames.push(...evShuffled);
+        }
+
+        if (mixedGames.length > 0) {
+            mixedGames.sort(() => 0.5 - Math.random());
+            grid.innerHTML = mixedGames.map(g => createGameCard(g)).join('');
         } else {
             grid.innerHTML = '<div class="col-span-full text-gray-500 text-center py-10 text-xs font-bold uppercase tracking-widest">Aucun jeu disponible.</div>';
         }
     }
 
-    // ================= 4. قسم الكازينو (السلوتس) =================
+    // ================= 5. الكازينو الشامل (Casino Lobby) =================
     async function initCasinoLobby() {
         const grid = document.getElementById('games-grid');
         if (grid) grid.innerHTML = '<div class="col-span-full text-[#00ff87] text-center py-12 animate-pulse text-lg font-bold"><i class="fas fa-circle-notch fa-spin mb-3 text-3xl"></i><br>Chargement du Casino... 🎰</div>';
 
-        const allGames = await fetchAllEVGames();
-        
-        const liveKeywords = ['LIVE', 'EVOLUTION', 'EZUGI', 'TVBET', 'VIVO'];
-        const casinoGames = allGames.filter(g => {
-            const prov = String(g.provider || '').toUpperCase();
-            return !liveKeywords.some(kw => prov.includes(kw));
-        });
-
-        window.currentProviderGames = casinoGames;
-        
-        const uniqueProviders = [...new Set(casinoGames.map(g => g.provider || 'EV Games'))].sort();
+        // بناء القائمة المنسدلة للمزودين
         const dropdownList = document.getElementById('provider-dropdown-list');
         if(dropdownList) {
-            dropdownList.innerHTML = `<button onclick="loadProviderGames('ALL', 'Tous les fournisseurs'); toggleProviderDropdown();" class="text-left px-4 py-3 text-xs font-bold text-[#00ff87] hover:bg-gray-800 transition">Tous les fournisseurs</button>` + 
-            uniqueProviders.map(p => `<button onclick="loadProviderGames('${escapeHTML(p)}', '${escapeHTML(p)}'); toggleProviderDropdown();" class="text-left px-4 py-3 text-xs font-bold text-gray-300 hover:text-white hover:bg-gray-800 transition border-b border-gray-800">${escapeHTML(p)}</button>`).join('');
+            // إضافة مزودي Nexus أولاً
+            let html = window.nexusProviders.map(p => 
+                `<button onclick="loadProviderGames('${p.code}', '${p.name}', false); toggleProviderDropdown();" class="text-left px-4 py-3 text-xs font-bold text-white hover:bg-gray-800 transition border-b border-gray-800">${p.name}</button>`
+            ).join('');
+            
+            // إضافة مزودي EV ثانياً
+            await fetchEVGamesSilent();
+            const evLiveKeywords = ['LIVE','EVOLUTION','EZUGI','TVBET'];
+            const evProviders = [...new Set(window.allEVGamesCache.filter(g => !evLiveKeywords.some(kw => String(g.provider).toUpperCase().includes(kw))).map(g => g.provider))].sort();
+            
+            html += evProviders.map(p => 
+                `<button onclick="loadProviderGames('${escapeHTML(p)}', '${escapeHTML(p)}', true); toggleProviderDropdown();" class="text-left px-4 py-3 text-xs font-bold text-[#00ff87] hover:bg-gray-800 transition border-b border-gray-800">${escapeHTML(p)}</button>`
+            ).join('');
+            
+            dropdownList.innerHTML = html;
         }
 
-        currentActiveProviderCode = "ALL";
-        currentDisplayLimit = 50;
-        renderCasinoGrid();
+        // تحميل ألعاب Pragmatic افتراضياً
+        await loadProviderGames('PRAGMATIC', 'Pragmatic Play', false);
     }
 
-    async function loadProviderGames(providerCode, providerName = null) {
+    // دالة عرض ألعاب المزود المختار
+    async function loadProviderGames(providerCode, providerName, isEv = false) {
         currentActiveProviderCode = providerCode;
         currentDisplayLimit = 50;
-        const label = document.getElementById('current-provider-label');
-        if (providerName && label) label.innerText = providerName;
         
-        const allGames = await fetchAllEVGames();
-        if (providerCode === 'ALL') {
-             window.currentProviderGames = allGames.filter(g => {
-                 const prov = String(g.provider || '').toUpperCase();
-                 return !['LIVE', 'EVOLUTION', 'EZUGI', 'TVBET', 'VIVO'].some(kw => prov.includes(kw));
-             });
+        const label = document.getElementById('current-provider-label');
+        if (label) label.innerText = providerName || providerCode;
+
+        const grid = document.getElementById('games-grid');
+        if (grid) grid.innerHTML = '<div class="col-span-full py-10 text-center"><i class="fas fa-circle-notch fa-spin text-[#00ff87] text-3xl mb-3"></i></div>';
+
+        if (isEv) {
+            window.currentProviderGames = window.allEVGamesCache.filter(g => g.provider === providerCode);
         } else {
-             window.currentProviderGames = allGames.filter(g => (g.provider || '') === providerCode);
+            window.currentProviderGames = await fetchNexusGames(providerCode);
         }
+        
         renderCasinoGrid();
     }
 
+    // رسم الشبكة والتمرير اللانهائي (Infinite Scroll)
     function renderCasinoGrid() {
         const container = document.getElementById('games-grid');
         if (!container) return;
-
+        
         if (window.currentProviderGames.length === 0) {
             container.innerHTML = '<div class="col-span-full text-gray-500 text-center py-10 font-bold text-xs uppercase tracking-widest">Aucun jeu trouvé.</div>';
             return;
@@ -904,20 +824,17 @@
             if (!sentinel) {
                 sentinel = document.createElement('div');
                 sentinel.id = 'games-scroll-sentinel';
-                sentinel.className = 'col-span-full text-center py-6 text-[#00ff87] animate-pulse text-xs font-bold tracking-widest uppercase';
+                sentinel.className = 'col-span-full text-center py-6 text-[#00ff87] animate-pulse text-xs font-bold';
                 sentinel.innerHTML = 'Chargement... ⏳';
                 container.parentNode.appendChild(sentinel);
             }
-
             if (!window.gamesObserver) {
                 window.gamesObserver = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting && currentDisplayLimit < window.currentProviderGames.length) {
-                            currentDisplayLimit += 50;
-                            renderCasinoGrid();
-                        }
-                    });
-                }, { rootMargin: '300px' });
+                    if (entries[0].isIntersecting) {
+                        currentDisplayLimit += 50;
+                        renderCasinoGrid();
+                    }
+                });
             }
             window.gamesObserver.observe(sentinel);
         } else if (sentinel) {
@@ -925,137 +842,114 @@
         }
     }
 
+    // ================= 6. وظائف البحث والقوائم المنسدلة =================
+    function toggleProviderDropdown() {
+        const d = document.getElementById('provider-dropdown');
+        if(d) { d.classList.toggle('hidden'); d.classList.toggle('flex'); }
+    }
+
+    function filterProviders() {
+        const input = document.getElementById('provider-search-input');
+        if(!input) return;
+        const term = input.value.toLowerCase();
+        const btns = document.querySelectorAll('#provider-dropdown-list button');
+        btns.forEach(btn => {
+            if(btn.innerText.toLowerCase().includes(term)) btn.style.display = 'block';
+            else btn.style.display = 'none';
+        });
+    }
+
     function filterGames() {
         const input = document.getElementById('game-search-input');
-        if (!input || !window.allEVGamesCache) return;
-
+        const container = document.getElementById('games-grid');
+        if(!input || !container) return;
+        
         const term = input.value.toLowerCase();
-        const liveKeywords = ['LIVE', 'EVOLUTION', 'EZUGI', 'TVBET', 'VIVO'];
-        const allCasinoGames = window.allEVGamesCache.filter(g => {
-            const prov = String(g.provider || '').toUpperCase();
-            return !liveKeywords.some(kw => prov.includes(kw));
-        });
-
-        window.currentProviderGames = allCasinoGames.filter(g => String(g.game_name || g.name || "").toLowerCase().includes(term));
-        currentDisplayLimit = 50; 
-        renderCasinoGrid();
+        const filtered = window.currentProviderGames.filter(g => String(g.game_name || g.name || '').toLowerCase().includes(term));
+        
+        container.innerHTML = filtered.slice(0, 50).map(g => createGameCard(g)).join('');
+        const s = document.getElementById('games-scroll-sentinel');
+        if(s) s.remove();
     }
 
-    function toggleProviderDropdown() {
-        const dropdown = document.getElementById('provider-dropdown');
-        if (dropdown) {
-            dropdown.classList.toggle('hidden');
-            dropdown.classList.toggle('flex');
-        }
-    }
-
-    // ================= 5. قسم اللايف كازينو =================
+    // ================= 7. اللايف كازينو (Live Casino) =================
     async function openLiveCasino() {
         const grid = document.getElementById("live-games-grid");
         if (!grid) return;
-
         grid.innerHTML = '<div class="col-span-full py-12 text-center"><i class="fas fa-circle-notch fa-spin text-3xl text-red-500 mb-3"></i><p class="text-gray-400 font-bold text-xs uppercase tracking-widest">Chargement des tables...</p></div>';
 
-        const allGames = await fetchAllEVGames();
+        const evoGames = await fetchNexusGames('EVO_LIVE');
+        const ppLiveGames = await fetchNexusGames('PP_LIVE_PRO');
         
-        const liveKeywords = ['LIVE', 'EVOLUTION', 'EZUGI', 'TVBET', 'VIVO'];
-        let liveGames = allGames.filter(g => {
-            const prov = String(g.provider || '').toUpperCase();
-            return liveKeywords.some(kw => prov.includes(kw));
-        });
-
-        window.allLoadedLiveGames = liveGames;
-
-        const uniqueLiveProv = [...new Set(liveGames.map(g => g.provider || 'Live'))].sort();
+        await fetchEVGamesSilent();
+        const evLiveGames = window.allEVGamesCache.filter(g => ['LIVE','EVOLUTION','EZUGI','TVBET'].some(kw => String(g.provider).toUpperCase().includes(kw)));
+        
+        window.allLoadedLiveGames = [...evoGames, ...ppLiveGames, ...evLiveGames];
+        
         const liveBar = document.getElementById('live-providers-bar');
         if (liveBar) {
-            let btnsHtml = `<button onclick="filterLiveGames('All')" class="live-provider-btn bg-red-500 text-white px-4 py-2 text-xs font-bold rounded-full transition whitespace-nowrap shadow-md hover:bg-red-600">Tout</button>`;
-            uniqueLiveProv.forEach(p => {
-                btnsHtml += `<button onclick="filterLiveGames('${escapeHTML(p)}')" class="live-provider-btn bg-[#1a1c23] border border-gray-700 text-gray-300 hover:text-white hover:border-red-500 px-4 py-2 text-xs font-bold rounded-full transition whitespace-nowrap shadow-sm">${escapeHTML(p)}</button>`;
-            });
-            liveBar.innerHTML = btnsHtml;
+            liveBar.innerHTML = `
+                <button onclick="filterLiveGames('All')" class="live-provider-btn bg-red-500 text-white px-4 py-2 text-xs font-bold rounded-full transition whitespace-nowrap shadow-md">Tout</button>
+                <button onclick="filterLiveGames('PP_LIVE_PRO')" class="live-provider-btn bg-[#1a1c23] border border-gray-700 text-white hover:border-red-500 px-4 py-2 text-xs font-bold rounded-full transition whitespace-nowrap shadow-sm">Pragmatic Live</button>
+                <button onclick="filterLiveGames('EVO_LIVE')" class="live-provider-btn bg-[#1a1c23] border border-gray-700 text-white hover:border-red-500 px-4 py-2 text-xs font-bold rounded-full transition whitespace-nowrap shadow-sm">Evolution</button>
+            `;
         }
-
-        renderLiveGamesList(liveGames);
+        renderLiveGamesList(window.allLoadedLiveGames);
     }
-    
+
     function filterLiveGames(provider) {
         if (!window.allLoadedLiveGames) return;
-        let filtered = window.allLoadedLiveGames;
-        if (provider !== 'All') filtered = window.allLoadedLiveGames.filter(g => g.provider === provider);
+        let filtered = provider === 'All' ? window.allLoadedLiveGames : window.allLoadedLiveGames.filter(g => g.provider === provider);
         renderLiveGamesList(filtered);
     }
 
-    function renderLiveGamesList(gamesArray) {
+    function renderLiveGamesList(arr) {
         const grid = document.getElementById('live-games-grid');
-        if (!grid) return;
-
-        if (gamesArray.length === 0) {
-            grid.innerHTML = '<div class="col-span-full text-gray-400 text-center py-10 font-bold text-xs">Aucune table trouvée</div>';
-            return;
-        }
-        grid.innerHTML = gamesArray.map(g => createGameCard(g, true)).join('');
+        if(grid) grid.innerHTML = arr.length > 0 ? arr.map(g => createGameCard(g, true)).join('') : '<div class="col-span-full text-center text-gray-500 py-10">Aucune table</div>';
     }
 
     function searchLiveGames() {
         const input = document.getElementById('live-search-input');
-        if (!input || !window.allLoadedLiveGames) return;
+        if(!input || !window.allLoadedLiveGames) return;
         const term = input.value.toLowerCase();
         const filtered = window.allLoadedLiveGames.filter(g => String(g.game_name || g.name || "").toLowerCase().includes(term));
         renderLiveGamesList(filtered);
     }
 
-    // ================= 6. قسم الألعاب الافتراضية =================
+    // ================= 8. الألعاب الافتراضية =================
     async function initVirtualsLobby() {
         const grid = document.getElementById('virtuals-games-grid');
-        if (grid) grid.innerHTML = '<div class="col-span-full text-blue-400 text-center py-10 text-lg font-bold"><i class="fas fa-circle-notch fa-spin mb-3"></i><br>Chargement des Virtuels...</div>';
-
-        const allGames = await fetchAllEVGames();
+        if (!grid) return;
+        grid.innerHTML = '<div class="col-span-full py-10 text-center"><i class="fas fa-circle-notch fa-spin text-blue-400 text-3xl mb-3"></i></div>';
         
-        if (allGames.length === 0) {
-            if (grid) grid.innerHTML = '<div class="col-span-full text-gray-500 text-center py-10 text-xs font-bold uppercase tracking-widest">Aucun jeu trouvé.</div>';
-            return;
+        await fetchEVGamesSilent();
+        const virtuals = window.allEVGamesCache.filter(g => !['LIVE','EVOLUTION','EZUGI','TVBET'].some(kw => String(g.provider).toUpperCase().includes(kw)));
+        
+        if (virtuals.length > 0) {
+            grid.innerHTML = virtuals.slice(0,60).map(g => createGameCard(g)).join('');
+        } else {
+            grid.innerHTML = '<div class="col-span-full text-gray-500 text-center py-10 text-xs font-bold uppercase tracking-widest">Aucun jeu trouvé.</div>';
         }
-
-        grid.innerHTML = allGames.map(g => {
-            const title = escapeHTML(String(g.game_name || g.name || "Virtual Game"));
-            const img = g.banner || g.image || g.thumb || `https://placehold.co/400x400/121212/3b82f6?text=${encodeURIComponent(title.substring(0, 10))}`;
-            const uuid = g.uuid || g.game_uuid || g.id || g.game_code;
-            const pCode = escapeHTML(g.provider || '');
-
-            return `
-            <div onclick="launchSpecificVirtualGame('${uuid}')" class="bg-[#1a1c23] border border-gray-800 rounded-xl overflow-hidden cursor-pointer hover:border-blue-400 transition-all flex flex-col group shadow-lg relative hover:-translate-y-1">
-                <div class="absolute top-0 right-0 bg-black/80 text-gray-400 text-[8px] font-black px-2 py-1 rounded-bl-lg z-20">${pCode}</div>
-                <div class="relative w-full aspect-square overflow-hidden bg-[#121212]">
-                    <img src="${img}" alt="${title}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/400x400/121212/3b82f6?text=Jeu';">
-                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 z-10">
-                        <span class="bg-blue-500 text-white text-[10px] font-bold px-4 py-2 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)]">JOUER</span>
-                    </div>
-                </div>
-                <div class="p-2 text-[10px] text-white font-bold truncate text-center">${title}</div>
-            </div>`;
-        }).join('');
     }
 
-    // ================= 7. دوال مساعدة (UI & Launch) =================
-    
-    // 💡 استخدام حيلة pt-[100%] بدلاً من aspect-square لتعمل على جميع الهواتف بامتياز
-    function createGameCard(g, isLive = false) {
+    // ================= 9. إنشاء الكروت ومحرك إطلاق الألعاب الذكي =================
+    function createGameCard(g, isLiveForce = false) {
         const title = escapeHTML(String(g.game_name || g.name || "Game"));
+        const isLive = isLiveForce || title.toLowerCase().includes('live');
         const img = g.banner || g.image || g.thumb || `https://placehold.co/400x400/121212/${isLive ? 'ef4444' : '00ff87'}?text=${encodeURIComponent(title.substring(0, 15))}`;
         
         const gameCode = g.game_code || g.uuid || g.game_uuid || g.id;
         const pCode = escapeHTML(g.provider || '');
+        const isEv = g.is_ev === true ? 'true' : 'false'; 
         
         const borderColor = isLive ? 'hover:border-red-500' : 'hover:border-[#00ff87]';
         const btnColor = isLive ? 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-[#00ff87] text-black shadow-[0_0_15px_rgba(0,255,135,0.4)]';
         
         let badges = `<div class="absolute top-0 right-0 bg-black/80 text-gray-400 text-[8px] font-black px-2 py-1 rounded-bl-lg z-20 border-b border-l border-gray-800">${pCode}</div>`;
         if(isLive) badges += `<div class="absolute top-0 left-0 bg-red-600 text-white text-[8px] font-black px-2 py-1 z-20 rounded-br-lg shadow-md">LIVE</div>`;
-        else badges += `<div class="absolute top-0 left-0 bg-[#00ff87] text-black text-[8px] font-black px-2 py-1 rounded-br-lg z-20 shadow-md">HOT 🔥</div>`;
-
+        
         return `
-            <div onclick="launchSpecificVirtualGame('${pCode}', '${gameCode}')" class="bg-[#1a1c23] border border-gray-800 rounded-xl overflow-hidden cursor-pointer ${borderColor} transition-all flex flex-col group shadow-lg relative hover:-translate-y-1">
+            <div onclick="playCasinoGame('${pCode}', '${gameCode}', ${isEv})" class="bg-[#1a1c23] border border-gray-800 rounded-xl overflow-hidden cursor-pointer ${borderColor} transition-all flex flex-col group shadow-lg relative hover:-translate-y-1">
                 ${badges}
                 <div class="relative w-full pt-[100%] overflow-hidden bg-[#121212]">
                     <img src="${img}" alt="${title}" loading="lazy" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/400x400/121212/333?text=Jeu';">
@@ -1067,161 +961,55 @@
             </div>`;
     }
 
-   // المحرك الأساسي لفتح ألعاب إيفرتيال (EuroVirtuals) حصراً
-    async function launchSpecificVirtualGame(providerCode, gameCode) {
+    // المحرك الذكي للإطلاق (يوجه اللعبة للسيرفر الصحيح)
+    async function playCasinoGame(providerCode, gameCode, isEv) {
         if (!playerSession) return openLoginModal();
+        
+        const container = document.getElementById('casino-iframe-container');
+        const iframe = document.getElementById('casino-iframe');
+        
+        if (container && iframe) {
+            container.classList.remove('hidden'); container.classList.add('flex');
+            iframe.src = ''; 
+        }
+
         try {
-            // 🌟 توجيه الطلب إلى رابط إيفرتيال الجديد في الباك إند بدلاً من الكازينو القديم 🌟
-            const res = await fetch(`${BACKEND_URL}/api/provider/launch-eurovirtuals`, {
+            // توجيه ذكي: رابط وبيانات مختلفة لـ EV مقابل Nexus
+            let endpointUrl = isEv ? `${BACKEND_URL}/api/provider/launch-eurovirtuals` : `${BACKEND_URL}/api/provider/launch-casino`;
+            let requestBody = isEv ? 
+                { user_code: playerSession.username, game_uuid: gameCode } : 
+                { user_code: playerSession.username, provider_code: providerCode, game_code: gameCode };
+
+            const res = await fetch(endpointUrl, {
                 method: 'POST',
-                headers: { 
-                    'Authorization': `Bearer ${localStorage.getItem('player_token')}`, 
-                    'Content-Type': 'application/json' 
-                },
-                body: JSON.stringify({ 
-                    user_code: playerSession.username, 
-                    game_uuid: gameCode // السيرفر الجديد لإيفرتيال يحتاج المتغير بهذا الاسم
-                })
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('player_token')}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
             });
 
             const data = await res.json();
             
             if (data.launch_url) {
-                window.open(data.launch_url, '_blank');
+                if (iframe) iframe.src = data.launch_url;
                 setTimeout(refreshBalance, 4000);
             } else {
+                if(container) { container.classList.add('hidden'); container.classList.remove('flex'); }
                 showNotification(data.error || "Jeu non disponible", "error");
             }
         } catch (e) {
+            if(container) { container.classList.add('hidden'); container.classList.remove('flex'); }
             showNotification("Erreur réseau", "error");
         }
     }
 
-    // دالة احتياطية لتوجيه أي أزرار قديمة إلى المحرك الجديد لإيفرتيال
-    function playCasinoGame(providerCode, gameCode) {
-        launchSpecificVirtualGame(providerCode, gameCode);
-    }
-
-    // دالة احتياطية لتوجيه أي أزرار قديمة إلى المحرك الجديد
-    function playCasinoGame(providerCode, gameCode) {
-        launchSpecificVirtualGame(providerCode, gameCode);
-    }
-    // ================= 8. أنظمة تسجيل الدخول والمستخدم =================
-    async function handlePlayerAuth() {
-        const user = document.getElementById('p-auth-username').value;
-        const pass = document.getElementById('p-auth-password').value;
-        const loginBtn = document.getElementById('login-submit-btn');
-
-        if (user && pass) {
-            const originalBtnHtml = loginBtn.innerHTML;
-            loginBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin text-lg"></i> Connexion...';
-            loginBtn.disabled = true;
-            loginBtn.classList.add('opacity-75', 'cursor-not-allowed');
-
-            try {
-                const res = await fetch(`${BACKEND_URL}/api/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: user, password: pass })
-                });
-
-                const data = await res.json();
-                if (res.ok) {
-                    localStorage.setItem('player_token', data.access_token);
-                    window.playerToken = data.access_token;
-                    playerSession = { username: data.username, balance: data.balance };
-                    localStorage.setItem('alpha_player_session', JSON.stringify(playerSession));
-                    setupLoggedInUI(); 
-                } else {
-                    showNotification(data.detail || "Identifiants incorrects", "error");
-                }
-            } catch (error) {
-                showNotification("Erreur de connexion", "error");
-            } finally {
-                loginBtn.innerHTML = originalBtnHtml;
-                loginBtn.disabled = false;
-                loginBtn.classList.remove('opacity-75', 'cursor-not-allowed');
-            }
-        } else {
-            showNotification("Veuillez remplir tous les champs", "error");
-        }
-    }
-
-    function logoutPlayer() {
-        localStorage.removeItem('player_token');
-        localStorage.removeItem('alpha_player_session');
-        window.playerToken = null;
-        playerSession = null;
-
-        if (window.balInterval) clearInterval(window.balInterval);
-
-        const authBtns = document.getElementById('auth-buttons-container');
-        if (authBtns) { authBtns.classList.remove('hidden'); authBtns.classList.add('flex'); }
-
-        const userProfile = document.getElementById('top-user-profile');
-        if (userProfile) { userProfile.classList.add('hidden'); userProfile.classList.remove('flex'); }
-    }
-
-    function setupLoggedInUI() {
-        closeLoginModal();
-        const authBtns = document.getElementById('auth-buttons-container');
-        if (authBtns) { authBtns.classList.add('hidden'); authBtns.classList.remove('flex'); }
-
-        const userProfile = document.getElementById('top-user-profile');
-        if (userProfile) { userProfile.classList.remove('hidden'); userProfile.classList.add('flex'); }
-
-        const sidebarName = document.getElementById('sidebar-username');
-        if (sidebarName) sidebarName.innerText = playerSession.username;
-
-        if (playerSession.balance !== undefined) updateBalanceDisplays(playerSession.balance);
+    function closeCasinoGame() {
+        const container = document.getElementById('casino-iframe-container');
+        const iframe = document.getElementById('casino-iframe');
+        if (container) { container.classList.add('hidden'); container.classList.remove('flex'); }
+        if (iframe) iframe.src = '';
         refreshBalance();
-
-        if (window.balInterval) clearInterval(window.balInterval);
-        window.balInterval = setInterval(refreshBalance, 5000);
     }
 
-    async function refreshBalance() {
-        if (!playerSession) return;
-        try {
-            const res = await fetch(`${BACKEND_URL}/gold_api`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ method: 'user_balance', user_code: playerSession.username })
-            });
-            const data = await res.json();
-            if (data.status === 1 && data.user_balance !== undefined) {
-                playerSession.balance = data.user_balance;
-                localStorage.setItem('alpha_player_session', JSON.stringify(playerSession));
-                updateBalanceDisplays(data.user_balance);
-            }
-        } catch (e) { }
-    }
-
-    function updateBalanceDisplays(balance) {
-        if (balance === undefined || balance === null) return;
-        const formattedBalance = parseFloat(balance).toFixed(2);
-        const balDisplay = document.getElementById('player-balance-val');
-        if (balDisplay) balDisplay.innerText = formattedBalance;
-        const sidebarBalDisplay = document.getElementById('sidebar-balance');
-        if (sidebarBalDisplay) sidebarBalDisplay.innerText = formattedBalance + ' TND';
-    }
-
-    function showNotification(message, type = "success") {
-        const container = document.getElementById('toast-container');
-        if (!container) return;
-
-        const toast = document.createElement('div');
-        toast.className = `px-4 py-3 rounded-xl font-bold text-sm shadow-xl transform transition-all translate-x-full flex items-center gap-2 ${type === 'error' ? 'bg-red-500 text-white' : 'bg-[#00ff87] text-black'}`;
-        toast.innerHTML = type === 'error' ? `<i class="fas fa-exclamation-circle"></i> ${message}` : `<i class="fas fa-check-circle"></i> ${message}`;
-
-        container.appendChild(toast);
-        setTimeout(() => toast.classList.remove('translate-x-full'), 10);
-        setTimeout(() => {
-            toast.classList.add('translate-x-full');
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
-    }
-
+    // ================= 10. شريط الفائزين (Gagnants Ticker) =================
     function generateLiveWinnersTicker() {
         const track = document.getElementById('winners-ticker-track');
         if (!track) return;
@@ -1240,4 +1028,99 @@
         }
         track.innerHTML = tickerHTML + tickerHTML;
     }
+
+    // ================= 11. أنظمة تسجيل الدخول والمستخدم =================
+    async function handlePlayerAuth() {
+        const user = document.getElementById('p-auth-username').value;
+        const pass = document.getElementById('p-auth-password').value;
+        const loginBtn = document.getElementById('login-submit-btn');
+
+        if (user && pass) {
+            const originalBtnHtml = loginBtn.innerHTML;
+            loginBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin text-lg"></i> Connexion...';
+            loginBtn.disabled = true; loginBtn.classList.add('opacity-75', 'cursor-not-allowed');
+
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/login`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    localStorage.setItem('player_token', data.access_token);
+                    playerSession = { username: data.username, balance: data.balance };
+                    localStorage.setItem('alpha_player_session', JSON.stringify(playerSession));
+                    setupLoggedInUI(); 
+                } else {
+                    showNotification(data.detail || "Identifiants incorrects", "error");
+                }
+            } catch (error) {
+                showNotification("Erreur de connexion", "error");
+            } finally {
+                loginBtn.innerHTML = originalBtnHtml;
+                loginBtn.disabled = false; loginBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
+        }
+    }
+
+    function logoutPlayer() {
+        localStorage.removeItem('player_token'); localStorage.removeItem('alpha_player_session');
+        playerSession = null;
+        if (window.balInterval) clearInterval(window.balInterval);
+        document.getElementById('auth-buttons-container')?.classList.remove('hidden');
+        document.getElementById('auth-buttons-container')?.classList.add('flex');
+        document.getElementById('top-user-profile')?.classList.add('hidden');
+        document.getElementById('top-user-profile')?.classList.remove('flex');
+    }
+
+    function setupLoggedInUI() {
+        closeLoginModal();
+        document.getElementById('auth-buttons-container')?.classList.add('hidden');
+        document.getElementById('auth-buttons-container')?.classList.remove('flex');
+        document.getElementById('top-user-profile')?.classList.remove('hidden');
+        document.getElementById('top-user-profile')?.classList.add('flex');
+        const sidebarName = document.getElementById('sidebar-username');
+        if (sidebarName) sidebarName.innerText = playerSession.username;
+        if (playerSession.balance !== undefined) updateBalanceDisplays(playerSession.balance);
+        refreshBalance();
+        if (window.balInterval) clearInterval(window.balInterval);
+        window.balInterval = setInterval(refreshBalance, 5000);
+    }
+
+    async function refreshBalance() {
+        if (!playerSession) return;
+        try {
+            const res = await fetch(`${BACKEND_URL}/gold_api`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ method: 'user_balance', user_code: playerSession.username })
+            });
+            const data = await res.json();
+            if (data.status === 1 && data.user_balance !== undefined) {
+                playerSession.balance = data.user_balance;
+                localStorage.setItem('alpha_player_session', JSON.stringify(playerSession));
+                updateBalanceDisplays(data.user_balance);
+            }
+        } catch (e) { }
+    }
+
+    function updateBalanceDisplays(balance) {
+        if (balance == null) return;
+        const formattedBalance = parseFloat(balance).toFixed(2);
+        const balDisplay = document.getElementById('player-balance-val');
+        if (balDisplay) balDisplay.innerText = formattedBalance;
+        const sidebarBalDisplay = document.getElementById('sidebar-balance');
+        if (sidebarBalDisplay) sidebarBalDisplay.innerText = formattedBalance + ' TND';
+    }
+
+    function showNotification(message, type = "success") {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `px-4 py-3 rounded-xl font-bold text-sm shadow-xl transform transition-all translate-x-full flex items-center gap-2 ${type === 'error' ? 'bg-red-500 text-white' : 'bg-[#00ff87] text-black'}`;
+        toast.innerHTML = type === 'error' ? `<i class="fas fa-exclamation-circle"></i> ${message}` : `<i class="fas fa-check-circle"></i> ${message}`;
+        container.appendChild(toast);
+        setTimeout(() => toast.classList.remove('translate-x-full'), 10);
+        setTimeout(() => { toast.classList.add('translate-x-full'); setTimeout(() => toast.remove(), 300); }, 3000);
+    }
 </script>
+       

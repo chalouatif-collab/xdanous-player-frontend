@@ -628,7 +628,80 @@
             </div>
         </div>
     </div>
+<!-- ================= دوال التحكم في الواجهة والتنقل ================= -->
+<script>
+    function switchSection(sectionId) {
+        document.querySelectorAll('.player-view-section').forEach(el => {
+            el.classList.remove('block');
+            el.classList.add('hidden');
+        });
+        const activeSec = document.getElementById(`pane-${sectionId}`);
+        if (activeSec) {
+            activeSec.classList.remove('hidden');
+            activeSec.classList.add('block');
+        }
+    }
 
+    function setActiveMenuBtn(activeBtnId) {
+        document.querySelectorAll('.main-nav-btn').forEach(btn => {
+            btn.className = "main-nav-btn snap-start flex items-center justify-center gap-1.5 md:gap-2 px-4 py-1.5 md:px-5 md:py-2.5 text-white bg-[#1a1c23] border border-gray-800 hover:border-neonGreen rounded-full transition-all shrink-0 font-bold uppercase tracking-wide text-[10px] md:text-xs shadow-sm";
+        });
+        const activeBtn = document.getElementById(activeBtnId);
+        if (activeBtn) {
+            activeBtn.className = "main-nav-btn snap-start flex items-center justify-center gap-1.5 md:gap-2 px-4 py-1.5 md:px-5 md:py-2.5 text-black bg-neonGreen border border-neonGreen rounded-full transition-all shrink-0 shadow-[0_0_15px_rgba(0,255,135,0.4)] font-black uppercase tracking-wide text-[10px] md:text-xs";
+            activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+    }
+
+    function updateMobileNav(clicked) {
+        document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+            btn.classList.remove('text-[#00ff87]');
+            btn.classList.add('text-gray-500');
+        });
+        clicked.classList.remove('text-gray-500');
+        clicked.classList.add('text-[#00ff87]');
+    }
+
+    function toggleProfileSidebar() {
+        const sidebar = document.getElementById('profile-sidebar');
+        const overlay = document.getElementById('profile-overlay');
+        if (sidebar && overlay) {
+            if (sidebar.classList.contains('translate-x-full')) {
+                sidebar.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+    }
+
+    function openLoginModal() {
+        const m = document.getElementById('player-login-modal');
+        if (m) { m.classList.remove('hidden'); m.classList.add('flex'); }
+    }
+
+    function closeLoginModal() {
+        const m = document.getElementById('player-login-modal');
+        if (m) { m.classList.add('hidden'); m.classList.remove('flex'); }
+    }
+
+    function toggleCashier() {
+        const m = document.getElementById('cashier-modal');
+        if (m) {
+            if (m.classList.contains('hidden')) {
+                m.classList.remove('hidden'); m.classList.add('flex');
+            } else {
+                m.classList.add('hidden'); m.classList.remove('flex');
+            }
+        }
+    }
+
+    function openSportsbookForProvider(p) {
+        // سيتم ربطها لاحقاً بالمحرك الخاص بالرياضة
+        console.log("Ouverture Sport:", p);
+    }
+</script>
     <!-- ================= JAVASCRIPT (المحرك الهجين النهائي والكامل) ================= -->
 <script>
     const BACKEND_URL = "https://xdanous-backend-onrender-com.onrender.com";

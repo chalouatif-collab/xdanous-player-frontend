@@ -866,26 +866,51 @@
                 return `<button onclick="loadProviderGames('${p.code}', '${safeNameJS}'); toggleProviderDropdown();" class="text-left px-4 py-3 text-xs font-bold text-gray-300 hover:text-emerald hover:bg-[#212631] rounded-xl transition-all border border-transparent hover:border-[#2e3648] w-full block truncate">${safeNameHTML}</button>`;
             }).join('');
         }
-    // دالة عرض ألعاب المزود المختار
-    async function loadProviderGames(providerCode, providerName, isEv = false) {
-        currentActiveProviderCode = providerCode;
-        currentDisplayLimit = 50;
-        
-        const label = document.getElementById('current-provider-label');
-        if (label) label.innerText = providerName || providerCode;
+           async function loadProviderGames(providerCode, providerName = null) {
+            currentActiveProviderCode = providerCode;
+            currentDisplayLimit = 50;
 
-        const grid = document.getElementById('games-grid');
-        if (grid) grid.innerHTML = '<div class="col-span-full py-10 text-center"><i class="fas fa-circle-notch fa-spin text-[#00ff87] text-3xl mb-3"></i></div>';
+            const grid = document.getElementById('games-grid');
+            const label = document.getElementById('current-provider-label');
 
-        if (isEv) {
-            window.currentProviderGames = window.allEVGamesCache.filter(g => g.provider === providerCode);
-        } else {
-            window.currentProviderGames = await fetchNexusGames(providerCode);
+            if (providerName && label) label.innerText = providerName;
+
+            const searchInput = document.getElementById('game-search-input');
+            if (searchInput) searchInput.value = '';
+
+            if (grid) grid.innerHTML = '<div class="col-span-full text-emerald text-center py-10 animate-pulse text-lg font-bold">Chargement des jeux... 🎰</div>';
+
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/get-providers`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ provider_code: providerCode })
+                });
+
+                if (!res.ok) throw new Error("HTTP Status: " + res.status);
+                
+                const data = await res.json();
+                
+                let gamesList = [];
+                if (data.status === 1 && data.games) {
+                    gamesList = data.games;
+                } else if (data.data) {
+                    gamesList = data.data;
+                } else if (Array.isArray(data)) {
+                    gamesList = data;
+                } else {
+                    throw new Error("Format de données inattendu du serveur");
+                }
+
+                // 💡 السر هنا: عكس المصفوفة لتظهر الألعاب المضافة حديثاً في أعلى الصفحة
+                window.currentProviderGames = gamesList.reverse();
+
+                renderCasinoGrid();
+            } catch (e) {
+                console.error("=== خطأ جلب الألعاب ===", e);
+                if (grid) grid.innerHTML = `<div class="col-span-full text-red-500 text-center py-10 font-bold">Erreur de connexion<br><span class="text-xs text-gray-500 font-mono mt-2 block">${e.message}</span></div>`;
+            }
         }
-        
-        renderCasinoGrid();
-    }
-
     // رسم الشبكة والتمرير اللانهائي (Infinite Scroll)
     function renderCasinoGrid() {
         const container = document.getElementById('games-grid');

@@ -831,35 +831,45 @@
         }
     }
 
-    // ================= 5. الكازينو الشامل (Casino Lobby) =================
     async function initCasinoLobby() {
-        const grid = document.getElementById('games-grid');
-        if (grid) grid.innerHTML = '<div class="col-span-full text-[#00ff87] text-center py-12 animate-pulse text-lg font-bold"><i class="fas fa-circle-notch fa-spin mb-3 text-3xl"></i><br>Chargement du Casino... 🎰</div>';
-
-        // بناء القائمة المنسدلة للمزودين
-        const dropdownList = document.getElementById('provider-dropdown-list');
-        if(dropdownList) {
-            // إضافة مزودي Nexus أولاً
-            let html = window.nexusProviders.map(p => 
-                `<button onclick="loadProviderGames('${p.code}', '${p.name}', false); toggleProviderDropdown();" class="text-left px-4 py-3 text-xs font-bold text-white hover:bg-gray-800 transition border-b border-gray-800">${p.name}</button>`
-            ).join('');
+    const dropdownList = document.getElementById('provider-dropdown-list');
+    if (dropdownList) {
+        dropdownList.innerHTML = '<div class="p-3 text-xs text-emerald text-center animate-pulse">Chargement des fournisseurs... 🔄</div>';
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/get-providers`);
+            const data = await res.json();
             
-            // إضافة مزودي EV ثانياً
-            await fetchEVGamesSilent();
-            const evLiveKeywords = ['LIVE','EVOLUTION','EZUGI','TVBET'];
-            const evProviders = [...new Set(window.allEVGamesCache.filter(g => !evLiveKeywords.some(kw => String(g.provider).toUpperCase().includes(kw))).map(g => g.provider))].sort();
+            let providersList = [];
+            // معالجة كافة الاحتمالات لشكل الرد القادم من الباك إند
+            if (Array.isArray(data)) {
+                providersList = data;
+            } else if (data.providers) {
+                providersList = data.providers;
+            } else if (data.data) {
+                providersList = data.data;
+            } else if (data.status === 1 && data.msg && Array.isArray(data.msg)) {
+                providersList = data.msg;
+            }
             
-            html += evProviders.map(p => 
-                `<button onclick="loadProviderGames('${escapeHTML(p)}', '${escapeHTML(p)}', true); toggleProviderDropdown();" class="text-left px-4 py-3 text-xs font-bold text-[#00ff87] hover:bg-gray-800 transition border-b border-gray-800">${escapeHTML(p)}</button>`
-            ).join('');
-            
-            dropdownList.innerHTML = html;
+            if (providersList.length > 0) {
+                window.nexusProviders = providersList.map(p => ({
+                    code: p.provider_code || p.code || p.id || p,
+                    name: p.provider_name || p.name || p
+                }));
+            }
+        } catch (e) {
+            console.warn("Erreur de chargement des fournisseurs:", e);
         }
-
-        // تحميل ألعاب Pragmatic افتراضياً
-        await loadProviderGames('PRAGMATIC', 'Pragmatic Play', false);
     }
 
+    // رسم المزودين في القائمة المنسدلة
+    filterProviders();
+
+    // تحميل ألعاب أول مزود تلقائياً
+    if (window.nexusProviders && window.nexusProviders.length > 0) {
+        loadProviderGames(window.nexusProviders[0].code, window.nexusProviders[0].name);
+    }
+}
     // دالة عرض ألعاب المزود المختار
     async function loadProviderGames(providerCode, providerName, isEv = false) {
         currentActiveProviderCode = providerCode;

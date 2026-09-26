@@ -832,47 +832,16 @@
     }
 
     async function initCasinoLobby() {
-            const listEl = document.getElementById('provider-dropdown-list');
-            if (listEl) {
-                // إظهار حالة التحميل فقط
-                listEl.innerHTML = '<div class="p-4 text-xs font-bold text-emerald text-center animate-pulse"><i class="fas fa-spinner fa-spin mb-2 text-lg"></i><br>Chargement des fournisseurs...</div>';
-            }
-
-            try {
-                // جلب قائمة المزودين من السيرفر
-                const res = await fetch(`${BACKEND_URL}/api/get-providers`);
-                const data = await res.json();
-                
-                let providersList = [];
-                // استخراج المصفوفة مهما كان شكل رد السيرفر
-                if (Array.isArray(data)) providersList = data;
-                else if (data.providers && Array.isArray(data.providers)) providersList = data.providers;
-                else if (data.data && Array.isArray(data.data)) providersList = data.data;
-                else if (data.msg && Array.isArray(data.msg)) providersList = data.msg;
-                else if (data.status === 1 && typeof data.msg === 'object') providersList = Object.values(data.msg);
-
-                // إذا وجدنا مزودين، نقوم بتحديث القائمة الشاملة
-                if (providersList.length > 0) {
-                    window.nexusProviders = providersList.map(p => ({
-                        code: p.provider_code || p.code || p.id || p,
-                        name: p.provider_name || p.name || p.provider_code || "Provider"
-                    })).filter(p => p.code); // إزالة أي قيم فارغة
-
-                    // ترتيب أبجدي أنيق
-                    window.nexusProviders.sort((a, b) => String(a.name).localeCompare(String(b.name)));
-                }
-            } catch (e) {
-                console.error("Erreur de connexion serveur:", e);
-            }
-
-            // رسم القائمة المنسدلة (هذا سيمسح رسالة التحميل تلقائياً)
+            // رسم المزودين في القائمة المنسدلة فوراً
             filterProviders();
 
-            // فتح ألعاب أول مزود تلقائياً
-            if (window.nexusProviders && window.nexusProviders.length > 0) {
-                loadProviderGames(window.nexusProviders[0].code, window.nexusProviders[0].name);
+            // تحميل ألعاب أول مزود في القائمة تلقائياً
+            if (window.nexusProviders.length > 0) {
+                const firstCode = window.nexusProviders[0].code;
+                loadProviderGames(firstCode, window.nexusProviders[0].name);
             }
         }
+        
 
         function filterProviders() {
             const input = document.getElementById('provider-search-input');

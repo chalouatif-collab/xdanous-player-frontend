@@ -902,7 +902,12 @@
             else if (data.data) gamesList = data.data;
             else if (Array.isArray(data)) gamesList = data;
 
-            window.currentProviderGames = gamesList.reverse();
+            // 💡 الحل الجذري: دمج كود المزود يدوياً في كل لعبة قبل حفظها
+            window.currentProviderGames = gamesList.map(g => ({ 
+                ...g, 
+                provider: providerCode 
+            })).reverse();
+            
             renderCasinoGrid();
         } catch (e) {
             if (grid) grid.innerHTML = `<div class="col-span-full text-red-500 text-center py-10 font-bold">Erreur de connexion</div>`;
@@ -991,20 +996,23 @@
             else if (data.data) gamesList = data.data;
             else if (Array.isArray(data)) gamesList = data;
 
-            window.allLoadedLiveGames = gamesList;
+            // 💡 الحل الجذري للكازينو المباشر أيضاً
+            window.allLoadedLiveGames = gamesList.map(g => ({ 
+                ...g, 
+                provider: providerCode 
+            }));
 
             if (grid) {
                 if (gamesList.length === 0) {
                     grid.innerHTML = '<div class="col-span-full text-gray-500 text-center py-10 font-bold">Aucune table disponible.</div>';
                     return;
                 }
-                grid.innerHTML = gamesList.map(g => createGameCard(g, true)).join('');
+                grid.innerHTML = window.allLoadedLiveGames.map(g => createGameCard(g, true)).join('');
             }
         } catch (e) {
             if (grid) grid.innerHTML = '<div class="col-span-full text-red-500 text-center py-10 font-bold">Erreur de connexion.</div>';
         }
     }
-
     function searchLiveGames() {
         const input = document.getElementById('live-search-input');
         const grid = document.getElementById('live-games-grid');

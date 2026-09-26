@@ -712,18 +712,10 @@
     window.nexusGamesCache = {}; // ذاكرة جديدة مخصصة لـ Nexus فقط
     window.currentProviderGames = [];
     window.allLoadedLiveGames = [];
-    let currentDisplayLimit = 50;
-    let currentActiveProviderCode = "PRAGMATIC"; // المزود الافتراضي
     
-    // قائمة مزودي Nexus الثابتة
-    window.nexusProviders = [
-        { code: 'PRAGMATIC', name: 'Pragmatic Play' },
-        { code: 'HACKSAW', name: 'Hacksaw Gaming' },
-        { code: 'PLAYNGO', name: "Play'n Go" },
-        { code: 'NOLIMIT', name: 'Nolimit City' },
-        { code: 'NETENT', name: 'NetEnt' }
-    ];
-
+    
+    
+    
     function escapeHTML(str) {
         if (!str) return '';
         return str.toString().replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
@@ -831,17 +823,48 @@
         }
     }
 
-    async function initCasinoLobby() {
-            // رسم المزودين في القائمة المنسدلة فوراً
+   // ================= قائمة المزودين المعتمدة من API =================
+        window.nexusProviders = [
+            { code: 'PRAGMATIC', name: 'Pragmatic Slot' },
+            { code: 'HACKSAW', name: 'Hacksaw' },
+            { code: 'PLAYNGO', name: "Play'n Go" },
+            { code: 'PGSOFT', name: 'PGSoft' },
+            { code: 'HABANERO', name: 'Habanero' },
+            { code: 'PLAYSON', name: 'Playson' },
+            { code: 'EVOPLAY', name: 'Evoplay' },
+            { code: 'AMUSNET', name: 'Amusnet' },
+            { code: 'EGT', name: 'EGT Digital' },
+            { code: 'BOOONGO', name: 'Booongo' },
+            { code: 'CQ9', name: 'CQ9' },
+            { code: 'TOPTREND', name: 'TopTrend' },
+            { code: 'DREAMTECH', name: 'DreamTech' },
+            { code: 'FACHAI', name: 'FaChai' },
+            { code: 'SPADEGAMING', name: 'Spadegaming' },
+            { code: 'FASTSPIN', name: 'FastSpin' },
+            { code: 'JOKERGAMING', name: 'Joker Gaming' },
+            { code: 'RUBYPLAY', name: 'RubyPlay' },
+            { code: 'AMATIC', name: 'Amatic' },
+            { code: 'NEXTSPIN', name: 'Next Spin' },
+            { code: 'SPRIBE', name: 'Spribe' }
+        ];
+
+        let currentDisplayLimit = 50;
+        let currentActiveProviderCode = "PRAGMATIC";
+        let gamesObserver = null;
+
+        async function initCasinoLobby() {
+            // رسم القائمة المنسدلة فوراً بالاعتماد على القائمة الثابتة
             filterProviders();
 
-            // تحميل ألعاب أول مزود في القائمة تلقائياً
-            if (window.nexusProviders.length > 0) {
-                const firstCode = window.nexusProviders[0].code;
-                loadProviderGames(firstCode, window.nexusProviders[0].name);
+            // تحميل ألعاب أول مزود في القائمة افتراضياً (Pragmatic)
+            if (window.nexusProviders && window.nexusProviders.length > 0) {
+                // وضع حالة تحميل في شبكة الألعاب
+                const grid = document.getElementById('games-grid');
+                if (grid) grid.innerHTML = '<div class="col-span-full text-emerald text-center py-10 animate-pulse text-lg font-bold">Chargement des jeux... 🎰</div>';
+                
+                loadProviderGames(window.nexusProviders[0].code, window.nexusProviders[0].name);
             }
         }
-        
 
         function filterProviders() {
             const input = document.getElementById('provider-search-input');
@@ -858,7 +881,7 @@
                  return;
             }
 
-            // 💡 السر هنا: استخدام replace لحماية الأسماء التي تحتوي فواصل عليا مثل Play'n Go
+            // حماية الأسماء التي تحتوي على فواصل عليا (مثل Play'n Go) لمنع تعطل الواجهة
             list.innerHTML = filtered.map(p => {
                 const safeNameJS = String(p.name).replace(/'/g, "\\'");
                 const safeNameHTML = escapeHTML(p.name);
@@ -866,6 +889,20 @@
                 return `<button onclick="loadProviderGames('${p.code}', '${safeNameJS}'); toggleProviderDropdown();" class="text-left px-4 py-3 text-xs font-bold text-gray-300 hover:text-emerald hover:bg-[#212631] rounded-xl transition-all border border-transparent hover:border-[#2e3648] w-full block truncate">${safeNameHTML}</button>`;
             }).join('');
         }
+
+            if (filtered.length === 0) {
+                 list.innerHTML = '<div class="p-3 text-xs text-gray-500 text-center font-bold">Aucun fournisseur trouvé</div>';
+                 return;
+            }
+
+            // 💡 السر هنا: استخدام replace لحماية الأسماء التي تحتوي فواصل عليا مثل Play'n Go
+            list.innerHTML = filtered.map(p => {
+                const safeNameJS = String(p.name).replace(/'/g, "\\'");
+                const safeNameHTML = escapeHTML(p.name);
+                
+                return `<button onclick="loadProviderGames('${p.code}', '${safeNameJS}'); toggleProviderDropdown();" class="text-left px-4 py-3 text-xs font-bold text-gray-300 hover:text-emerald hover:bg-[#212631] rounded-xl transition-all border border-transparent hover:border-[#2e3648] w-full block truncate">${safeNameHTML}</button>`;
+            }).join('');
+        
            async function loadProviderGames(providerCode, providerName = null) {
             currentActiveProviderCode = providerCode;
             currentDisplayLimit = 50;

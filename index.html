@@ -741,7 +741,7 @@
         switchSection(savedSection);
 
         // تشغيل شريط الفائزين
-        generateLiveWinnersTicker();
+        if (typeof generateLiveWinnersTicker === 'function') generateLiveWinnersTicker();
 
         // جلب ألعاب EV في الخلفية، ثم تحميل ألعاب اليوم
         fetchEVGamesSilent().then(() => {
@@ -760,7 +760,7 @@
     async function fetchEVGamesSilent() {
         if (window.allEVGamesCache.length > 0) return window.allEVGamesCache;
         try {
-            const res = await fetch(`${BACKEND_URL}/api/get-eurovirtuals-games`);
+            const res = await fetch(`https://alpha-backend-server.onrender.com/api/get-eurovirtuals-games`);
             const data = await res.json();
             let games = data.data || data.games || data || [];
             
@@ -782,7 +782,7 @@
     async function fetchNexusGames(providerCode) {
         if (window.nexusGamesCache[providerCode]) return window.nexusGamesCache[providerCode];
         try {
-            const res = await fetch(`${BACKEND_URL}/api/get-providers`, {
+            const res = await fetch(`https://alpha-backend-server.onrender.com/api/get-providers`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ provider_code: providerCode })
@@ -1048,7 +1048,7 @@
 
         try {
             // توجيه ذكي: رابط وبيانات مختلفة لـ EV مقابل Nexus
-            let endpointUrl = isEv ? `${BACKEND_URL}/api/provider/launch-eurovirtuals` : `${BACKEND_URL}/api/provider/launch-casino`;
+            let endpointUrl = isEv ? `https://alpha-backend-server.onrender.com/api/provider/launch-eurovirtuals` : `https://alpha-backend-server.onrender.com/api/provider/launch-casino`;
             let requestBody = isEv ? 
                 { user_code: playerSession.username, game_uuid: gameCode } : 
                 { user_code: playerSession.username, provider_code: providerCode, game_code: gameCode };
@@ -1196,4 +1196,3 @@
         setTimeout(() => { toast.classList.add('translate-x-full'); setTimeout(() => toast.remove(), 300); }, 3000);
     }
 </script>
-       

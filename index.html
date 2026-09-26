@@ -237,53 +237,91 @@
             <!-- قسم الرئيسية -->
             <div id="pane-accueil" class="player-view-section block w-full space-y-6">
 
-                <!-- البانر الإعلاني الرئيسي (Hero Banner) -->
-                <div class="bg-gradient-to-r from-[#003823] to-[#1a1c23] rounded-2xl p-6 md:p-10 relative overflow-hidden flex flex-col justify-center min-h-[220px] md:min-h-[280px] shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-gray-800 group cursor-pointer"
-                    onclick="switchSection('casino'); initCasinoLobby();">
-                    <!-- خلفية جمالية -->
-                    <div
-                        class="absolute right-0 top-0 bottom-0 w-2/3 opacity-20 bg-[url('https://placehold.co/800x400/121212/00ff87?text=Casino+Vibes')] bg-cover bg-left mix-blend-screen group-hover:scale-105 transition-transform duration-700">
-                    </div>
-                    <div class="absolute inset-0 bg-gradient-to-r from-[#121212] to-transparent w-2/3"></div>
+             <!-- 🌟 البانرات الترويجية المتحركة (Auto-Slider 3 Seconds) 🌟 -->
+<div class="relative w-auto -mx-2 md:mx-0 rounded-none md:rounded-[32px] overflow-hidden bg-[#1a1c23] border-y md:border border-gray-800 shadow-lg md:shadow-2xl h-[170px] md:h-[300px]">
+    
+    <!-- حاوية الشرائح -->
+    <div id="promo-auto-slider" class="flex w-full h-full transition-transform duration-500 ease-out" style="transform: translateX(0%);">
+        
+        <!-- Slide 1: Divertissement -->
+        <div class="w-full h-full flex-shrink-0 relative group cursor-pointer" onclick="switchSection('casino'); initCasinoLobby();">
+            <img src="https://images.unsplash.com/photo-1596838132731-3301c3fd4317?auto=format&fit=crop&w=1200&q=80" class="w-full h-full object-cover opacity-40" alt="Jeux">
+            <div class="absolute inset-0 bg-gradient-to-r from-[#121212] via-[#121212]/90 to-transparent p-5 md:p-12 flex flex-col justify-center">
+                <span class="bg-[#00ff87]/20 text-[#00ff87] border border-[#00ff87]/50 px-3 py-1 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-widest w-max mb-2 md:mb-4 shadow-sm">Divertissement</span>
+                <h2 class="text-xl md:text-5xl font-black text-white uppercase leading-tight mb-1 tracking-tighter">Des Milliers de<br><span class="text-[#00ff87] drop-shadow-[0_0_10px_rgba(0,255,135,0.3)]">Jeux Premium</span></h2>
+                <p class="text-[10px] md:text-sm text-gray-300 font-bold max-w-xs md:max-w-md hidden md:block">Découvrez une sélection exclusive des meilleurs fournisseurs mondiaux pour une expérience inoubliable.</p>
+            </div>
+        </div>
 
-                    <div class="relative z-10 max-w-lg">
-                        <span
-                            class="bg-[#00ff87]/20 text-[#00ff87] border border-[#00ff87]/50 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-3 inline-block shadow-sm">Bonus
-                            de Bienvenue</span>
-                        <h2 class="text-3xl md:text-5xl font-black text-white leading-tight mb-4 tracking-tighter">
-                            DOUBLEZ VOTRE<br><span
-                                class="text-[#00ff87] drop-shadow-[0_0_10px_rgba(0,255,135,0.4)]">PREMIER DÉPÔT</span>
-                        </h2>
-                        <p
-                            class="text-gray-400 text-xs md:text-sm font-bold mb-6 hidden md:block max-w-sm leading-relaxed">
-                            Inscrivez-vous maintenant et profitez de nos meilleurs jeux avec un solde boosté
-                            instantanément.</p>
-                        <button
-                            class="bg-[#00ff87] text-black font-black text-xs md:text-sm px-6 md:px-8 py-3 rounded-full hover:bg-white transition-all shadow-[0_0_20px_rgba(0,255,135,0.3)] hover:shadow-[0_0_30px_rgba(0,255,135,0.6)]">
-                            Jouer Maintenant <i class="fas fa-arrow-right ml-2"></i>
-                        </button>
-                    </div>
-                </div>
+        <!-- Slide 2: Vitesse -->
+        <div class="w-full h-full flex-shrink-0 relative group cursor-pointer">
+            <img src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80" class="w-full h-full object-cover opacity-40" alt="Vitesse">
+            <div class="absolute inset-0 bg-gradient-to-r from-[#121212] via-[#121212]/90 to-transparent p-5 md:p-12 flex flex-col justify-center">
+                <span class="bg-blue-500/20 text-blue-400 border border-blue-500/50 px-3 py-1 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-widest w-max mb-2 md:mb-4 shadow-sm">Fiabilité</span>
+                <h2 class="text-xl md:text-5xl font-black text-white uppercase leading-tight mb-1 tracking-tighter">Transactions<br><span class="text-blue-400 drop-shadow-[0_0_10px_rgba(59,130,246,0.3)]">Ultra Rapides</span></h2>
+                <p class="text-[10px] md:text-sm text-gray-300 font-bold max-w-xs md:max-w-md hidden md:block">Déposez et retirez vos fonds en toute sécurité et sans aucun délai d'attente.</p>
+            </div>
+        </div>
 
-                <!-- شريط المزودين السريع -->
-                <div class="flex items-center gap-3 overflow-x-auto no-scrollbar pb-2 pt-2">
-                    <button onclick="switchSection('casino'); initCasinoLobby();"
-                        class="bg-[#1a1c23] border border-gray-800 hover:border-[#00ff87] text-white px-5 py-3 rounded-xl text-xs font-bold transition-all flex items-center gap-3 whitespace-nowrap shadow-md hover:-translate-y-1">
-                        <i class="fas fa-crown text-[#00ff87] text-lg"></i> Pragmatic Play
-                    </button>
-                    <button onclick="switchSection('casino'); initCasinoLobby();"
-                        class="bg-[#1a1c23] border border-gray-800 hover:border-yellow-500 text-white px-5 py-3 rounded-xl text-xs font-bold transition-all flex items-center gap-3 whitespace-nowrap shadow-md hover:-translate-y-1">
-                        <i class="fas fa-bolt text-yellow-500 text-lg"></i> Hacksaw Gaming
-                    </button>
-                    <button onclick="switchSection('live-casino'); openLiveCasino();"
-                        class="bg-[#1a1c23] border border-gray-800 hover:border-red-500 text-white px-5 py-3 rounded-xl text-xs font-bold transition-all flex items-center gap-3 whitespace-nowrap shadow-md hover:-translate-y-1">
-                        <i class="fas fa-video text-red-500 text-lg"></i> Evolution Live
-                    </button>
-                    <button onclick="switchSection('virtuals'); initVirtualsLobby();"
-                        class="bg-[#1a1c23] border border-gray-800 hover:border-blue-400 text-white px-5 py-3 rounded-xl text-xs font-bold transition-all flex items-center gap-3 whitespace-nowrap shadow-md hover:-translate-y-1">
-                        <i class="fas fa-gamepad text-blue-400 text-lg"></i> Sports Virtuels
-                    </button>
-                </div>
+        <!-- Slide 3: Live Casino -->
+        <div class="w-full h-full flex-shrink-0 relative group cursor-pointer" onclick="switchSection('live-casino'); openLiveCasino();">
+            <img src="https://images.unsplash.com/photo-1605870445919-838d190e8e1b?auto=format&fit=crop&w=1200&q=80" class="w-full h-full object-cover opacity-40" alt="Live">
+            <div class="absolute inset-0 bg-gradient-to-r from-[#121212] via-[#121212]/90 to-transparent p-5 md:p-12 flex flex-col justify-center">
+                <span class="bg-red-500/20 text-red-500 border border-red-500/50 px-3 py-1 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-widest w-max mb-2 md:mb-4 shadow-sm">Immersion</span>
+                <h2 class="text-xl md:text-5xl font-black text-white uppercase leading-tight mb-1 tracking-tighter">Croupiers<br><span class="text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.3)]">En Direct</span></h2>
+                <p class="text-[10px] md:text-sm text-gray-300 font-bold max-w-xs md:max-w-md hidden md:block">Vivez l'ambiance d'un vrai casino depuis le confort de votre écran avec nos tables HD.</p>
+            </div>
+        </div>
+
+        <!-- Slide 4: Sportsbook -->
+        <div class="w-full h-full flex-shrink-0 relative group cursor-pointer" onclick="openSportsbookForProvider('nexus')">
+            <img src="https://images.unsplash.com/photo-1518133683791-0b9229971842?auto=format&fit=crop&w=1200&q=80" class="w-full h-full object-cover opacity-40" alt="Sports">
+            <div class="absolute inset-0 bg-gradient-to-r from-[#121212] via-[#121212]/90 to-transparent p-5 md:p-12 flex flex-col justify-center">
+                <span class="bg-yellow-500/20 text-yellow-500 border border-yellow-500/50 px-3 py-1 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-widest w-max mb-2 md:mb-4 shadow-sm">Sportsbook</span>
+                <h2 class="text-xl md:text-5xl font-black text-white uppercase leading-tight mb-1 tracking-tighter">Les Meilleures<br><span class="text-yellow-500 drop-shadow-[0_0_10px_rgba(234,179,8,0.3)]">Cotes du Marché</span></h2>
+                <p class="text-[10px] md:text-sm text-gray-300 font-bold max-w-xs md:max-w-md hidden md:block">Pariez sur des milliers d'événements mondiaux avec des statistiques en temps réel.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- مؤشرات السلايدر (Dots) -->
+    <div class="absolute bottom-3 md:bottom-5 left-0 right-0 flex justify-center gap-2 z-20 pointer-events-none">
+        <div class="slider-dot w-4 h-1.5 md:w-6 md:h-2 rounded-full bg-[#00ff87] shadow-[0_0_10px_rgba(0,255,135,0.5)] transition-all duration-300"></div>
+        <div class="slider-dot w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-white/30 transition-all duration-300"></div>
+        <div class="slider-dot w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-white/30 transition-all duration-300"></div>
+        <div class="slider-dot w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-white/30 transition-all duration-300"></div>
+    </div>
+</div>
+
+<!-- محرك الحركة التلقائية -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const slider = document.getElementById('promo-auto-slider');
+        const dots = document.querySelectorAll('.slider-dot');
+        let currentSlide = 0;
+        const totalSlides = 4;
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            
+            // تحريك السلايدر
+            slider.style.transform = `translateX(-${currentSlide * 100}%)`;
+            
+            // تحديث النقاط (Dots) لتعكس الشريحة الحالية
+            dots.forEach((dot, index) => {
+                if (index === currentSlide) {
+                    dot.className = 'slider-dot w-4 h-1.5 md:w-6 md:h-2 rounded-full bg-[#00ff87] shadow-[0_0_10px_rgba(0,255,135,0.5)] transition-all duration-300';
+                } else {
+                    dot.className = 'slider-dot w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-white/30 transition-all duration-300';
+                }
+            });
+        }
+
+        // تشغيل الحركة التلقائية كل 3000 ملي ثانية (3 ثواني)
+        setInterval(nextSlide, 3000);
+    });
+</script>   
 
                 <!-- شبكة ألعاب اليوم (Sélection du Jour) -->
                 <div>

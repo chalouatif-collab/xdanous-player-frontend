@@ -697,9 +697,42 @@
         }
     }
 
-    function openSportsbookForProvider(p) {
-        // سيتم ربطها لاحقاً بالمحرك الخاص بالرياضة
-        console.log("Ouverture Sport:", p);
+    async function openSportsbookForProvider(providerCode = 'nexus') {
+        // 1. التحقق من تسجيل الدخول قبل أي شيء
+        if (!playerSession) return openLoginModal();
+
+        // 2. إظهار إشعار لطيف للاعب ليعرف أن الطلب قيد المعالجة
+        showNotification("Ouverture du Sportsbook en cours... ⚽", "success");
+
+        try {
+            // 3. إرسال الطلب للسيرفر لجلب رابط الرياضة
+            const response = await fetch(`${BACKEND_URL}/api/provider/launch-sportsbook`, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': `Bearer ${localStorage.getItem('player_token')}`,
+                    'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify({
+                    provider_code: providerCode,
+                    user_code: playerSession.username,
+                    game_code: "SPORTSBOOK"
+                })
+            });
+
+            const data = await response.json();
+
+            // 4. التحقق من الرابط وفتحه في نافذة مستقلة
+            if (data.launch_url) {
+                window.open(data.launch_url, '_blank');
+                
+                // تحديث الرصيد في الخلفية
+                setTimeout(refreshBalance, 4000);
+            } else {
+                showNotification(data.error || "Sportsbook non disponible actuellement", "error");
+            }
+        } catch (error) {
+            showNotification("Erreur de connexion au Sportsbook", "error");
+        }
     }
 </script>
    <!-- ================= JAVASCRIPT (المحرك الهجين النهائي والكامل) ================= -->

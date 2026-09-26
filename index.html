@@ -946,31 +946,61 @@
         if(s) s.remove();
     }
 
-    // ================= 7. اللايف كازينو (Live Casino) =================
-    async function openLiveCasino() {
-        const grid = document.getElementById("live-games-grid");
-        if (!grid) return;
-        grid.innerHTML = '<div class="col-span-full py-12 text-center"><i class="fas fa-circle-notch fa-spin text-3xl text-red-500 mb-3"></i><p class="text-gray-400 font-bold text-xs uppercase tracking-widest">Chargement des tables...</p></div>';
-
-        const evoGames = await fetchNexusGames('EVO_LIVE');
-        const ppLiveGames = await fetchNexusGames('PP_LIVE_PRO');
-        
-        await fetchEVGamesSilent();
-        const evLiveGames = window.allEVGamesCache.filter(g => ['LIVE','EVOLUTION','EZUGI','TVBET'].some(kw => String(g.provider).toUpperCase().includes(kw)));
-        
-        window.allLoadedLiveGames = [...evoGames, ...ppLiveGames, ...evLiveGames];
-        
-        const liveBar = document.getElementById('live-providers-bar');
-        if (liveBar) {
-            liveBar.innerHTML = `
-                <button onclick="filterLiveGames('All')" class="live-provider-btn bg-red-500 text-white px-4 py-2 text-xs font-bold rounded-full transition whitespace-nowrap shadow-md">Tout</button>
-                <button onclick="filterLiveGames('PP_LIVE_PRO')" class="live-provider-btn bg-[#1a1c23] border border-gray-700 text-white hover:border-red-500 px-4 py-2 text-xs font-bold rounded-full transition whitespace-nowrap shadow-sm">Pragmatic Live</button>
-                <button onclick="filterLiveGames('EVO_LIVE')" class="live-provider-btn bg-[#1a1c23] border border-gray-700 text-white hover:border-red-500 px-4 py-2 text-xs font-bold rounded-full transition whitespace-nowrap shadow-sm">Evolution</button>
-            `;
-        }
-        renderLiveGamesList(window.allLoadedLiveGames);
+    async function openLiveCasino(providerCode = 'PP_LIVE_PRO') {
+    const grid = document.getElementById('live-games-grid');
+    if (grid) grid.innerHTML = '<div class="col-span-full text-red-500 text-center py-10 animate-pulse">Chargement des tables... 🔴</div>';
+    
+    // بناء شريط المزودين المباشرين للفلترة
+    const liveBar = document.getElementById('live-providers-bar');
+    if (liveBar) {
+        liveBar.innerHTML = `
+            <button onclick="openLiveCasino('PP_LIVE_PRO')" class="px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${providerCode === 'PP_LIVE_PRO' ? 'bg-red-500 text-white shadow-md' : 'bg-[#1a1e29] text-gray-300 hover:text-white'}">Pragmatic Live</button>
+            <button onclick="openLiveCasino('EVO_LIVE')" class="px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${providerCode === 'EVO_LIVE' ? 'bg-red-500 text-white shadow-md' : 'bg-[#1a1e29] text-gray-300 hover:text-white'}">Evolution Live</button>
+        `;
     }
 
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/get-providers`, {
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ provider_code: providerCode })
+        });
+        const data = await res.json();
+        
+        // 💡 قراءة البيانات بذكاء بغض النظر عن شكل رد السيرفر
+        let gamesList = [];
+        if (data.status === 1 && data.games) gamesList = data.games;
+        else if (data.data) gamesList = data.data;
+        else if (Array.isArray(data)) gamesList = data;
+
+        if (grid) {
+            if (gamesList.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-gray-500 text-center py-10 font-bold">Aucune table disponible pour ce fournisseur.</div>';
+                return;
+            }
+            
+            grid.innerHTML = gamesList.map(g => {
+                const title = escapeHTML(String(g.game_name || g.name || "Live Table"));
+                const img = g.banner || g.image || g.thumb || 'https://placehold.co/400x400/180A2B/FFF?text=Live+Casino';
+                const code = g.game_code || g.id;
+                
+                return `
+                <div onclick="playCasinoGame('${providerCode}', '${code}')" class="bg-[#0f1117] border border-[#212631] rounded-xl overflow-hidden cursor-pointer hover:border-red-500 transition-all relative flex flex-col group shadow-lg">
+                    <div class="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-black px-2 py-0.5 z-10 animate-pulse rounded-bl">LIVE</div>
+                    <div class="relative w-full aspect-square overflow-hidden bg-[#161922]">
+                        <img src="${img}" alt="${title}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/400x400/180A2B/FFF?text=Live';">
+                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 z-10">
+                            <span class="bg-red-500 text-white text-[10px] font-bold px-4 py-2 rounded-full shadow-lg">REJOINDRE</span>
+                        </div>
+                    </div>
+                    <div class="p-2 text-[10px] text-white font-bold truncate text-center">${title}</div>
+                </div>`;
+            }).join('');
+        }
+    } catch (e) {
+        if (grid) grid.innerHTML = '<div class="col-span-full text-red-500 text-center py-10 font-bold">Erreur de connexion au live.</div>';
+    }
+}
     function filterLiveGames(provider) {
         if (!window.allLoadedLiveGames) return;
         let filtered = provider === 'All' ? window.allLoadedLiveGames : window.allLoadedLiveGames.filter(g => g.provider === provider);

@@ -760,7 +760,8 @@
     async function fetchEVGamesSilent() {
         if (window.allEVGamesCache.length > 0) return window.allEVGamesCache;
         try {
-            const res = await fetch(`https://alpha-backend-server.onrender.com/api/get-eurovirtuals-games`);
+            // تم التصحيح: استخدام BACKEND_URL الديناميكي
+            const res = await fetch(`${BACKEND_URL}/api/get-eurovirtuals-games`);
             const data = await res.json();
             let games = data.data || data.games || data || [];
             
@@ -768,7 +769,7 @@
                 window.allEVGamesCache = games.map(g => ({
                     ...g, 
                     provider: g.provider || g.provider_name || 'EV_Game',
-                    is_ev: true // ختم اللعبة بأنها تابعة لـ EV
+                    is_ev: true 
                 }));
             }
             return window.allEVGamesCache;
@@ -778,11 +779,12 @@
         }
     }
 
-    // ب- محرك جلب ألعاب Nexus (مع خاصية الذاكرة Cache)
+    // ب- محرك جلب ألعاب Nexus
     async function fetchNexusGames(providerCode) {
         if (window.nexusGamesCache[providerCode]) return window.nexusGamesCache[providerCode];
         try {
-            const res = await fetch(`https://alpha-backend-server.onrender.com/api/get-providers`, {
+            // تم التصحيح: استخدام BACKEND_URL الديناميكي
+            const res = await fetch(`${BACKEND_URL}/api/get-providers`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ provider_code: providerCode })
@@ -791,7 +793,6 @@
             let games = data.games || data.data || [];
             if (!Array.isArray(games)) games = [];
             
-            // ختم اللعبة بأنها تابعة لـ Nexus
             const mappedGames = games.map(g => ({ ...g, provider: providerCode, is_ev: false }));
             window.nexusGamesCache[providerCode] = mappedGames;
             return mappedGames;
@@ -1034,7 +1035,7 @@
             </div>`;
     }
 
-    // المحرك الذكي للإطلاق (يوجه اللعبة للسيرفر الصحيح)
+    // ج- المحرك الذكي للإطلاق
     async function playCasinoGame(providerCode, gameCode, isEv) {
         if (!playerSession) return openLoginModal();
         
@@ -1047,8 +1048,8 @@
         }
 
         try {
-            // توجيه ذكي: رابط وبيانات مختلفة لـ EV مقابل Nexus
-            let endpointUrl = isEv ? `https://alpha-backend-server.onrender.com/api/provider/launch-eurovirtuals` : `https://alpha-backend-server.onrender.com/api/provider/launch-casino`;
+            // تم التصحيح: استخدام BACKEND_URL الديناميكي
+            let endpointUrl = isEv ? `${BACKEND_URL}/api/provider/launch-eurovirtuals` : `${BACKEND_URL}/api/provider/launch-casino`;
             let requestBody = isEv ? 
                 { user_code: playerSession.username, game_uuid: gameCode } : 
                 { user_code: playerSession.username, provider_code: providerCode, game_code: gameCode };
@@ -1073,7 +1074,6 @@
             showNotification("Erreur réseau", "error");
         }
     }
-
     function closeCasinoGame() {
         const container = document.getElementById('casino-iframe-container');
         const iframe = document.getElementById('casino-iframe');

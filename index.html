@@ -697,43 +697,46 @@
         }
     }
 
-    async function openSportsbookForProvider(providerCode = 'nexus') {
-        // 1. التحقق من تسجيل الدخول قبل أي شيء
-        if (!playerSession) return openLoginModal();
+    // 2. تشغيل الرياضة المباشرة (Sportsbook)
+async function openSportsbookForProvider(providerCode = 'SPORTSBOOK') {
+    if (!playerSession) return openLoginModal();
 
-        // 2. إظهار إشعار لطيف للاعب ليعرف أن الطلب قيد المعالجة
-        showNotification("Ouverture du Sportsbook en cours... ⚽", "success");
+    // 💡 فتح النافذة فوراً قبل انتظار السيرفر
+    const sportsWindow = window.open('', '_blank');
+    sportsWindow.document.write('<body style="background:#121212;color:#00ff87;display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;margin:0;"><h2>Chargement du Sportsbook... ⚽</h2><p style="color:#888;font-size:12px;">Veuillez patienter</p></body>');
 
-        try {
-            // 3. إرسال الطلب للسيرفر لجلب رابط الرياضة
-            const response = await fetch(`${BACKEND_URL}/api/provider/launch-sportsbook`, {
-                method: 'POST',
-                headers: { 
-                    'Authorization': `Bearer ${localStorage.getItem('player_token')}`,
-                    'Content-Type': 'application/json' 
-                },
-                body: JSON.stringify({
-                    provider_code: providerCode,
-                    user_code: playerSession.username,
-                    game_code: "SPORTSBOOK"
-                })
-            });
+    try {
+        // 💡 تصحيح ذكي: إذا كان الزر يرسل 'nexus' نحوله إلى 'SPORTSBOOK' ليتوافق مع الـ API
+        let actualProvider = providerCode.toUpperCase();
+        if (actualProvider === 'NEXUS') actualProvider = 'SPORTSBOOK';
 
-            const data = await response.json();
+        const response = await fetch(`${BACKEND_URL}/api/provider/launch-sportsbook`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('player_token')}`,
+                'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify({
+                provider_code: actualProvider,
+                user_code: playerSession.username,
+                game_code: "SPORTSBOOK"
+            })
+        });
 
-            // 4. التحقق من الرابط وفتحه في نافذة مستقلة
-            if (data.launch_url) {
-                window.open(data.launch_url, '_blank');
-                
-                // تحديث الرصيد في الخلفية
-                setTimeout(refreshBalance, 4000);
-            } else {
-                showNotification(data.error || "Sportsbook non disponible actuellement", "error");
-            }
-        } catch (error) {
-            showNotification("Erreur de connexion au Sportsbook", "error");
+        const data = await response.json();
+
+        if (data.launch_url) {
+            sportsWindow.location.href = data.launch_url;
+            setTimeout(refreshBalance, 4000);
+        } else {
+            sportsWindow.close();
+            showNotification(data.error || "Sportsbook non disponible", "error");
         }
+    } catch (error) {
+        sportsWindow.close();
+        showNotification("Erreur de connexion", "error");
     }
+}
 </script>
    <!-- ================= JAVASCRIPT (المحرك الهجين النهائي والكامل) ================= -->
 <script>
@@ -1100,50 +1103,41 @@
             </div>`;
     }
 
-    async function playCasinoGame(providerCode, gameCode, isEv) {
-        // التحقق من تسجيل الدخول
-        if (!playerSession) return openLoginModal();
+    // 1. تشغيل ألعاب السلوتس والكازينو المباشر
+async function playCasinoGame(providerCode, gameCode, isEv) {
+    if (!playerSession) return openLoginModal();
+    
+    // 💡 فتح النافذة فوراً قبل انتظار السيرفر (لتخطي حظر المتصفحات)
+    const gameWindow = window.open('', '_blank');
+    gameWindow.document.write('<body style="background:#121212;color:#00ff87;display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;margin:0;"><h2>Chargement du jeu... 🎰</h2><p style="color:#888;font-size:12px;">Veuillez patienter</p></body>');
+
+    try {
+        let endpointUrl = isEv ? `${BACKEND_URL}/api/provider/launch-eurovirtuals` : `${BACKEND_URL}/api/provider/launch-casino`;
+        let requestBody = isEv ? 
+            { user_code: playerSession.username, game_uuid: gameCode } : 
+            { user_code: playerSession.username, provider_code: providerCode, game_code: gameCode };
+
+        const res = await fetch(endpointUrl, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('player_token')}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+        });
+
+        const data = await res.json();
         
-        // إظهار إشعار للاعب بأن اللعبة قيد التجهيز
-        showNotification("Lancement du jeu en cours... ⏳", "success");
-
-        try {
-            // توجيه ذكي: رابط وبيانات مختلفة لـ EV مقابل Nexus
-            let endpointUrl = isEv ? `${BACKEND_URL}/api/provider/launch-eurovirtuals` : `${BACKEND_URL}/api/provider/launch-casino`;
-            let requestBody = isEv ? 
-                { user_code: playerSession.username, game_uuid: gameCode } : 
-                { user_code: playerSession.username, provider_code: providerCode, game_code: gameCode };
-
-            const res = await fetch(endpointUrl, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('player_token')}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            });
-
-            const data = await res.json();
-            
-            if (data.launch_url) {
-                // 💡 الحل الجذري: فتح رابط اللعبة في نافذة/علامة تبويب مستقلة
-                window.open(data.launch_url, '_blank');
-                
-                // تحديث الرصيد بعد 4 ثوانٍ
-                setTimeout(refreshBalance, 4000);
-            } else {
-                showNotification(data.error || "Jeu non disponible", "error");
-            }
-        } catch (e) {
-            showNotification("Erreur réseau", "error");
+        if (data.launch_url) {
+            // توجيه النافذة التي فتحناها للتو إلى رابط اللعبة الفعلي
+            gameWindow.location.href = data.launch_url;
+            setTimeout(refreshBalance, 4000);
+        } else {
+            gameWindow.close(); // إغلاق النافذة إذا رفض المزود التشغيل
+            showNotification(data.error || "Jeu non disponible", "error");
         }
+    } catch (e) {
+        gameWindow.close();
+        showNotification("Erreur réseau", "error");
     }
-
-    function closeCasinoGame() {
-        const container = document.getElementById('casino-iframe-container');
-        const iframe = document.getElementById('casino-iframe');
-        if (container) { container.classList.add('hidden'); container.classList.remove('flex'); }
-        if (iframe) iframe.src = '';
-        refreshBalance();
-    }
-
+}
     // ================= 9. التيكر والتحقق =================
     function generateLiveWinnersTicker() {
         const track = document.getElementById('winners-ticker-track');

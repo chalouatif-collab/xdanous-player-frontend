@@ -415,8 +415,84 @@
                 </div>
 
                 <!-- حاوية المزودين المميزين (Dynamic Featured Providers) -->
-                <div id="dynamic-featured-providers" class="flex flex-col gap-6 w-full mt-4"></div>
+                <!-- ================= الأقسام الإضافية الجديدة ================= -->
+                <div id="dynamic-home-sections" class="flex flex-col gap-8 w-full mt-8 overflow-hidden">
 
+                    <!-- 1. الشريط السريع لأبرز المزودين (Fournisseurs Vedettes) -->
+                    <div>
+                        <h3 class="text-gray-500 font-black text-xs uppercase tracking-widest mb-3 px-1">Fournisseurs Vedettes</h3>
+                        <div class="flex gap-3 overflow-x-auto no-scrollbar snap-x pb-2">
+                            <button onclick="switchSection('casino'); loadProviderGames('PRAGMATIC', 'Pragmatic Play');" class="snap-start shrink-0 bg-[#1a1c23] hover:bg-gray-800 border border-gray-800 hover:border-[#00ff87] px-6 py-3 rounded-xl transition-all flex items-center justify-center min-w-[120px] shadow-sm">
+                                <span class="text-white font-black text-sm uppercase tracking-wider">Pragmatic</span>
+                            </button>
+                            <button onclick="switchSection('casino'); loadProviderGames('HACKSAW', 'Hacksaw Gaming');" class="snap-start shrink-0 bg-[#1a1c23] hover:bg-gray-800 border border-gray-800 hover:border-gray-400 px-6 py-3 rounded-xl transition-all flex items-center justify-center min-w-[120px] shadow-sm">
+                                <span class="text-white font-black text-sm uppercase tracking-wider">Hacksaw</span>
+                            </button>
+                            <button onclick="switchSection('casino'); loadProviderGames('PLAYNGO', 'Play\'n Go');" class="snap-start shrink-0 bg-[#1a1c23] hover:bg-gray-800 border border-gray-800 hover:border-blue-400 px-6 py-3 rounded-xl transition-all flex items-center justify-center min-w-[120px] shadow-sm">
+                                <span class="text-white font-black text-sm uppercase tracking-wider">Play'n Go</span>
+                            </button>
+                            <button onclick="switchSection('crash'); loadCrashGames();" class="snap-start shrink-0 bg-[#1a1c23] hover:bg-gray-800 border border-gray-800 hover:border-purple-500 px-6 py-3 rounded-xl transition-all flex items-center justify-center min-w-[120px] shadow-sm">
+                                <span class="text-white font-black text-sm uppercase tracking-wider">Spribe</span>
+                            </button>
+                            <button onclick="switchSection('live-casino'); openLiveCasino('EVO_LIVE');" class="snap-start shrink-0 bg-[#1a1c23] hover:bg-gray-800 border border-gray-800 hover:border-red-500 px-6 py-3 rounded-xl transition-all flex items-center justify-center min-w-[120px] shadow-sm">
+                                <span class="text-white font-black text-sm uppercase tracking-wider">Evolution</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. قسم الألعاب الأكثر شعبية -->
+                    <div>
+                        <div class="flex justify-between items-center mb-4 px-1">
+                            <h3 class="text-white font-black text-lg flex items-center gap-2">
+                                <i class="fas fa-star text-yellow-500"></i> Jeux Populaires
+                            </h3>
+                            <button onclick="switchSection('casino'); initCasinoLobby();" class="text-xs text-gray-400 hover:text-[#00ff87] font-bold transition">Voir tout <i class="fas fa-chevron-right text-[10px] ml-1"></i></button>
+                        </div>
+                        <div id="home-popular-grid" class="flex gap-3 overflow-x-auto no-scrollbar snap-x pb-4">
+                            <div class="w-full text-center py-8"><i class="fas fa-circle-notch fa-spin text-yellow-500 text-2xl"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- 3. قسم شراء البونص -->
+                    <div>
+                        <div class="flex justify-between items-center mb-4 px-1">
+                            <h3 class="text-white font-black text-lg flex items-center gap-2">
+                                <i class="fas fa-shopping-cart text-[#00ff87]"></i> Achat de Bonus
+                            </h3>
+                            <button onclick="switchSection('casino'); loadProviderGames('HACKSAW', 'Hacksaw Gaming');" class="text-xs text-gray-400 hover:text-[#00ff87] font-bold transition">Voir tout <i class="fas fa-chevron-right text-[10px] ml-1"></i></button>
+                        </div>
+                        <div id="home-bonus-grid" class="flex gap-3 overflow-x-auto no-scrollbar snap-x pb-4">
+                            <div class="w-full text-center py-8"><i class="fas fa-circle-notch fa-spin text-[#00ff87] text-2xl"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- 4. قسم الكراش والألعاب السريعة -->
+                    <div>
+                        <div class="flex justify-between items-center mb-4 px-1">
+                            <h3 class="text-white font-black text-lg flex items-center gap-2">
+                                <i class="fas fa-rocket text-purple-500"></i> Crash & Mini-Jeux
+                            </h3>
+                            <button onclick="loadCrashGames();" class="text-xs text-gray-400 hover:text-[#00ff87] font-bold transition">Voir tout <i class="fas fa-chevron-right text-[10px] ml-1"></i></button>
+                        </div>
+                        <div id="home-crash-grid" class="flex gap-3 overflow-x-auto no-scrollbar snap-x pb-4">
+                            <div class="w-full text-center py-8"><i class="fas fa-circle-notch fa-spin text-purple-500 text-2xl"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- 5. قسم طاولات اللايف كازينو -->
+                    <div>
+                        <div class="flex justify-between items-center mb-4 px-1">
+                            <h3 class="text-white font-black text-lg flex items-center gap-2">
+                                <i class="fas fa-video text-red-500"></i> Tables en Direct
+                            </h3>
+                            <button onclick="switchSection('live-casino'); openLiveCasino();" class="text-xs text-gray-400 hover:text-[#00ff87] font-bold transition">Voir tout <i class="fas fa-chevron-right text-[10px] ml-1"></i></button>
+                        </div>
+                        <div id="home-live-grid" class="flex gap-3 overflow-x-auto no-scrollbar snap-x pb-4">
+                            <div class="w-full text-center py-8"><i class="fas fa-circle-notch fa-spin text-red-500 text-2xl"></i></div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
 
             <!-- بقية الأقسام (الكازينو، اللايف، الافتراضي) بقيت كما هي دون تغيير لضمان عملها -->
@@ -892,6 +968,8 @@ async function openSportsbookForProvider(providerCode = 'SPORTSBOOK') {
         if (savedSession) {
             playerSession = JSON.parse(savedSession);
             setupLoggedInUI();
+            loadHomeExtraSections();
+            loadGamesOfTheDay();
         }
 
         const savedSection = localStorage.getItem('active_section') || 'accueil';
@@ -949,7 +1027,43 @@ async function openSportsbookForProvider(providerCode = 'SPORTSBOOK') {
             return [];
         }
     }
+    async function loadHomeExtraSections() {
+        // جلب البيانات من المزودين في الخلفية بسلاسة
+        const pragmatic = await fetchNexusGames('PRAGMATIC');
+        const hacksaw = await fetchNexusGames('HACKSAW');
+        const spribe = await fetchNexusGames('SPRIBE');
+        const evoLive = await fetchNexusGames('EVO_LIVE');
+        
+        // دالة مساعدة لتغليف كرت اللعبة بحجم ثابت للتمرير الأفقي
+        const wrapCard = (g, isLive = false) => `<div class="w-[130px] md:w-[150px] shrink-0 snap-start">${createGameCard(g, isLive)}</div>`;
 
+        // 1. الألعاب الشعبية (مزيج عشوائي من Pragmatic)
+        const popularGrid = document.getElementById('home-popular-grid');
+        if(popularGrid && pragmatic.length > 0) {
+            const games = [...pragmatic].sort(() => 0.5 - Math.random()).slice(0, 15);
+            popularGrid.innerHTML = games.map(g => wrapCard(g)).join('');
+        } else if (popularGrid) { popularGrid.innerHTML = '<div class="text-gray-500 text-xs px-2 py-4">Bientôt disponible</div>'; }
+
+        // 2. شراء البونص (استخدمنا Hacksaw كمثال لأن ألعابهم تتميز بهذه الخاصية)
+        const bonusGrid = document.getElementById('home-bonus-grid');
+        if(bonusGrid && hacksaw.length > 0) {
+            const games = [...hacksaw].slice(0, 15);
+            bonusGrid.innerHTML = games.map(g => wrapCard(g)).join('');
+        } else if (bonusGrid) { bonusGrid.innerHTML = '<div class="text-gray-500 text-xs px-2 py-4">Bientôt disponible</div>'; }
+
+        // 3. ألعاب الكراش (Spribe / Aviator)
+        const crashGrid = document.getElementById('home-crash-grid');
+        if(crashGrid && spribe.length > 0) {
+            crashGrid.innerHTML = spribe.map(g => wrapCard(g)).join('');
+        } else if (crashGrid) { crashGrid.innerHTML = '<div class="text-gray-500 text-xs px-2 py-4">Bientôt disponible</div>'; }
+
+        // 4. اللايف كازينو (Evolution)
+        const liveGrid = document.getElementById('home-live-grid');
+        if(liveGrid && evoLive.length > 0) {
+            const games = [...evoLive].slice(0, 15);
+            liveGrid.innerHTML = games.map(g => wrapCard(g, true)).join('');
+        } else if (liveGrid) { liveGrid.innerHTML = '<div class="text-gray-500 text-xs px-2 py-4">Bientôt disponible</div>'; }
+    }
     // ================= 4. واجهة ألعاب اليوم =================
     async function loadGamesOfTheDay() {
         const grid = document.getElementById('games-of-the-day-grid');

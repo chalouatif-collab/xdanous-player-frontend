@@ -1043,12 +1043,11 @@ async function openSportsbookForProvider(providerCode = 'SPORTSBOOK') {
     }
     async function loadHomeExtraSections() {
         try {
-            // جلب البيانات من كل المزودين في نفس اللحظة (أسرع بـ 4 مرات)
-            const [pragmatic, hacksaw, spribe, evoLive] = await Promise.all([
+            const [pragmatic, hacksaw, spribe, liveGames] = await Promise.all([
                 fetchNexusGames('PRAGMATIC'),
                 fetchNexusGames('HACKSAW'),
                 fetchNexusGames('SPRIBE'),
-                fetchNexusGames('PP_LIVE_PRO')
+                fetchNexusGames('PP_LIVE_PRO') 
             ]);
             
             const wrapCard = (g, isLive = false) => `<div class="w-[130px] md:w-[150px] shrink-0 snap-start">${createGameCard(g, isLive)}</div>`;
@@ -1069,17 +1068,21 @@ async function openSportsbookForProvider(providerCode = 'SPORTSBOOK') {
             const crashGrid = document.getElementById('home-crash-grid');
             if(crashGrid) crashGrid.innerHTML = (spribe && spribe.length > 0) 
                 ? spribe.map(g => wrapCard(g)).join('') 
-                : '<div class="text-gray-500 text-xs px-2 py-4">Aucun jeu disponible</div>';
+                : '<div class="text-gray-500 text-xs px-2 py-4">Ajoutez des jeux SPRIBE au serveur</div>';
 
-            // 4. اللايف كازينو
+            // 4. اللايف كازينو (مع نظام احتياطي للعرض)
             const liveGrid = document.getElementById('home-live-grid');
-            if(liveGrid) liveGrid.innerHTML = (ppLivePro && ppLivePro.length > 0) 
-                ? [...ppLivePro].slice(0, 15).map(g => wrapCard(g, true)).join('') 
-                : '<div class="text-gray-500 text-xs px-2 py-4">Aucun jeu disponible</div>';
+            if(liveGrid) {
+                // إذا لم يجد ألعاب لايف حقيقية، سيأخذ آخر 15 لعبة من Pragmatic لملء الواجهة مؤقتاً
+                let displayLiveGames = (liveGames && liveGames.length > 0) ? liveGames : (pragmatic ? pragmatic.slice(-15) : []);
+                
+                liveGrid.innerHTML = (displayLiveGames.length > 0) 
+                    ? displayLiveGames.slice(0, 15).map(g => wrapCard(g, true)).join('') 
+                    : '<div class="text-gray-500 text-xs px-2 py-4">Ajoutez des jeux LIVE au serveur</div>';
+            }
 
         } catch (error) {
             console.error("Erreur de chargement:", error);
-            // إخفاء دوائر التحميل وكتابة رسالة في حال فشل الاتصال بالسيرفر
             ['home-popular-grid', 'home-bonus-grid', 'home-crash-grid', 'home-live-grid'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = '<div class="text-gray-500 text-xs px-2 py-4">Erreur de connexion</div>';

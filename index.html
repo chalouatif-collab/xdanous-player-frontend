@@ -1048,7 +1048,7 @@ async function openSportsbookForProvider(providerCode = 'SPORTSBOOK') {
                 fetchNexusGames('PRAGMATIC'),
                 fetchNexusGames('HACKSAW'),
                 fetchNexusGames('SPRIBE'),
-                fetchNexusGames('EVO_LIVE')
+                fetchNexusGames('PP_LIVE_PRO')
             ]);
             
             const wrapCard = (g, isLive = false) => `<div class="w-[130px] md:w-[150px] shrink-0 snap-start">${createGameCard(g, isLive)}</div>`;
@@ -1073,8 +1073,8 @@ async function openSportsbookForProvider(providerCode = 'SPORTSBOOK') {
 
             // 4. اللايف كازينو
             const liveGrid = document.getElementById('home-live-grid');
-            if(liveGrid) liveGrid.innerHTML = (evoLive && evoLive.length > 0) 
-                ? [...evoLive].slice(0, 15).map(g => wrapCard(g, true)).join('') 
+            if(liveGrid) liveGrid.innerHTML = (ppLivePro && ppLivePro.length > 0) 
+                ? [...ppLivePro].slice(0, 15).map(g => wrapCard(g, true)).join('') 
                 : '<div class="text-gray-500 text-xs px-2 py-4">Aucun jeu disponible</div>';
 
         } catch (error) {

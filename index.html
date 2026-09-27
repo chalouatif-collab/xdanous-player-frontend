@@ -988,14 +988,21 @@ async function openSportsbookForProvider(providerCode = 'SPORTSBOOK') {
     };
 
     // ================= 3. محركات الجلب (Fetch Engines) =================
+    // ================= 3. محركات الجلب (Fetch Engines) =================
+    
     async function fetchEVGamesSilent() {
         if (window.allEVGamesCache.length > 0) return window.allEVGamesCache;
         try {
-            const res = await fetch(`${BACKEND_URL}/api/get-eurovirtuals-games`);
+            const fetchPromise = fetch(`${BACKEND_URL}/api/get-eurovirtuals-games`);
+            const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 6000));
+            
+            const res = await Promise.race([fetchPromise, timeoutPromise]);
+            if (!res.ok) return []; // تجاوز الخطأ إذا كان المسار غير موجود 404
+            
             const data = await res.json();
             let games = data.data || data.games || data || [];
             
-            if (games.length > 0) {
+            if (Array.isArray(games) && games.length > 0) {
                 window.allEVGamesCache = games.map(g => ({
                     ...g, 
                     provider: g.provider || g.provider_name || 'EV_Game',
@@ -1004,6 +1011,7 @@ async function openSportsbookForProvider(providerCode = 'SPORTSBOOK') {
             }
             return window.allEVGamesCache;
         } catch (e) {
+            console.warn("fetchEVGamesSilent échoué, ignoré.");
             return [];
         }
     }
@@ -1011,11 +1019,16 @@ async function openSportsbookForProvider(providerCode = 'SPORTSBOOK') {
     async function fetchNexusGames(providerCode) {
         if (window.nexusGamesCache[providerCode]) return window.nexusGamesCache[providerCode];
         try {
-            const res = await fetch(`${BACKEND_URL}/api/get-providers`, {
+            const fetchPromise = fetch(`${BACKEND_URL}/api/get-providers`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ provider_code: providerCode })
             });
+            const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 6000));
+            
+            const res = await Promise.race([fetchPromise, timeoutPromise]);
+            if (!res.ok) return []; // تجاوز الخطأ بصمت
+            
             const data = await res.json();
             let games = data.games || data.data || [];
             if (!Array.isArray(games)) games = [];
@@ -1024,7 +1037,8 @@ async function openSportsbookForProvider(providerCode = 'SPORTSBOOK') {
             window.nexusGamesCache[providerCode] = mappedGames;
             return mappedGames;
         } catch (e) {
-            return [];
+            console.warn(`fetchNexusGames échoué pour ${providerCode}`);
+            return []; // إرجاع مصفوفة فارغة لكي تختفي دوائر التحميل ولا تنهار الصفحة
         }
     }
     async function loadHomeExtraSections() {

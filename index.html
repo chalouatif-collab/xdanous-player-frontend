@@ -1093,25 +1093,34 @@ async function openSportsbookForProvider(providerCode = 'SPORTSBOOK') {
     async function loadGamesOfTheDay() {
         const grid = document.getElementById('games-of-the-day-grid');
         if (!grid) return;
+        
+        // شاشة تحميل أنيقة أثناء الانتظار
         grid.innerHTML = '<div class="col-span-full py-10 text-center"><i class="fas fa-circle-notch fa-spin text-[#00ff87] text-3xl mb-3"></i><p class="text-gray-500 text-xs font-bold uppercase tracking-widest">Chargement des jeux...</p></div>';
 
-        let mixedGames = [];
-        const pragmaticGames = await fetchNexusGames('PRAGMATIC');
-        const hacksawGames = await fetchNexusGames('HACKSAW');
-        
-        if(pragmaticGames.length > 0) mixedGames.push(...pragmaticGames.slice(0, 6));
-        if(hacksawGames.length > 0) mixedGames.push(...hacksawGames.slice(0, 4));
+        try {
+            // جلب الألعاب بالتوازي لتسريع الظهور
+            const [pragmaticGames, hacksawGames] = await Promise.all([
+                fetchNexusGames('PRAGMATIC'),
+                fetchNexusGames('HACKSAW')
+            ]);
 
-        if (window.allEVGamesCache.length > 0) {
-            const evShuffled = [...window.allEVGamesCache].sort(() => 0.5 - Math.random()).slice(0, 4);
-            mixedGames.push(...evShuffled);
-        }
+            let mixedGames = [];
+            
+            // سحب 6 ألعاب من كل مزود ليصبح المجموع 12 لعبة (تملأ سطرين بالكامل)
+            if(pragmaticGames && pragmaticGames.length > 0) mixedGames.push(...pragmaticGames.slice(0, 6));
+            if(hacksawGames && hacksawGames.length > 0) mixedGames.push(...hacksawGames.slice(0, 6));
 
-        if (mixedGames.length > 0) {
-            mixedGames.sort(() => 0.5 - Math.random());
-            grid.innerHTML = mixedGames.map(g => createGameCard(g)).join('');
-        } else {
-            grid.innerHTML = '<div class="col-span-full text-gray-500 text-center py-10 text-xs font-bold uppercase tracking-widest">Aucun jeu disponible.</div>';
+            if (mixedGames.length > 0) {
+                // خلط الألعاب لتبدو متنوعة وتفاعلية في كل مرة يتم فيها تحديث الصفحة
+                mixedGames.sort(() => 0.5 - Math.random());
+                
+                // قص المصفوفة وعرض 12 لعبة كحد أقصى للحفاظ على توازن الشبكة
+                grid.innerHTML = mixedGames.slice(0, 12).map(g => createGameCard(g)).join('');
+            } else {
+                grid.innerHTML = '<div class="col-span-full text-gray-500 text-center py-10 text-xs font-bold uppercase tracking-widest">Aucun jeu disponible.</div>';
+            }
+        } catch (error) {
+            grid.innerHTML = '<div class="col-span-full text-red-500 text-center py-10 text-xs font-bold uppercase tracking-widest">Erreur de chargement.</div>';
         }
     }
 

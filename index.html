@@ -1028,41 +1028,49 @@ async function openSportsbookForProvider(providerCode = 'SPORTSBOOK') {
         }
     }
     async function loadHomeExtraSections() {
-        // جلب البيانات من المزودين في الخلفية بسلاسة
-        const pragmatic = await fetchNexusGames('PRAGMATIC');
-        const hacksaw = await fetchNexusGames('HACKSAW');
-        const spribe = await fetchNexusGames('SPRIBE');
-        const evoLive = await fetchNexusGames('EVO_LIVE');
-        
-        // دالة مساعدة لتغليف كرت اللعبة بحجم ثابت للتمرير الأفقي
-        const wrapCard = (g, isLive = false) => `<div class="w-[130px] md:w-[150px] shrink-0 snap-start">${createGameCard(g, isLive)}</div>`;
+        try {
+            // جلب البيانات من كل المزودين في نفس اللحظة (أسرع بـ 4 مرات)
+            const [pragmatic, hacksaw, spribe, evoLive] = await Promise.all([
+                fetchNexusGames('PRAGMATIC'),
+                fetchNexusGames('HACKSAW'),
+                fetchNexusGames('SPRIBE'),
+                fetchNexusGames('EVO_LIVE')
+            ]);
+            
+            const wrapCard = (g, isLive = false) => `<div class="w-[130px] md:w-[150px] shrink-0 snap-start">${createGameCard(g, isLive)}</div>`;
 
-        // 1. الألعاب الشعبية (مزيج عشوائي من Pragmatic)
-        const popularGrid = document.getElementById('home-popular-grid');
-        if(popularGrid && pragmatic.length > 0) {
-            const games = [...pragmatic].sort(() => 0.5 - Math.random()).slice(0, 15);
-            popularGrid.innerHTML = games.map(g => wrapCard(g)).join('');
-        } else if (popularGrid) { popularGrid.innerHTML = '<div class="text-gray-500 text-xs px-2 py-4">Bientôt disponible</div>'; }
+            // 1. الألعاب الشعبية
+            const popularGrid = document.getElementById('home-popular-grid');
+            if(popularGrid) popularGrid.innerHTML = (pragmatic && pragmatic.length > 0) 
+                ? [...pragmatic].sort(() => 0.5 - Math.random()).slice(0, 15).map(g => wrapCard(g)).join('') 
+                : '<div class="text-gray-500 text-xs px-2 py-4">Aucun jeu disponible</div>';
 
-        // 2. شراء البونص (استخدمنا Hacksaw كمثال لأن ألعابهم تتميز بهذه الخاصية)
-        const bonusGrid = document.getElementById('home-bonus-grid');
-        if(bonusGrid && hacksaw.length > 0) {
-            const games = [...hacksaw].slice(0, 15);
-            bonusGrid.innerHTML = games.map(g => wrapCard(g)).join('');
-        } else if (bonusGrid) { bonusGrid.innerHTML = '<div class="text-gray-500 text-xs px-2 py-4">Bientôt disponible</div>'; }
+            // 2. شراء البونص
+            const bonusGrid = document.getElementById('home-bonus-grid');
+            if(bonusGrid) bonusGrid.innerHTML = (hacksaw && hacksaw.length > 0) 
+                ? [...hacksaw].slice(0, 15).map(g => wrapCard(g)).join('') 
+                : '<div class="text-gray-500 text-xs px-2 py-4">Aucun jeu disponible</div>';
 
-        // 3. ألعاب الكراش (Spribe / Aviator)
-        const crashGrid = document.getElementById('home-crash-grid');
-        if(crashGrid && spribe.length > 0) {
-            crashGrid.innerHTML = spribe.map(g => wrapCard(g)).join('');
-        } else if (crashGrid) { crashGrid.innerHTML = '<div class="text-gray-500 text-xs px-2 py-4">Bientôt disponible</div>'; }
+            // 3. ألعاب الكراش
+            const crashGrid = document.getElementById('home-crash-grid');
+            if(crashGrid) crashGrid.innerHTML = (spribe && spribe.length > 0) 
+                ? spribe.map(g => wrapCard(g)).join('') 
+                : '<div class="text-gray-500 text-xs px-2 py-4">Aucun jeu disponible</div>';
 
-        // 4. اللايف كازينو (Evolution)
-        const liveGrid = document.getElementById('home-live-grid');
-        if(liveGrid && evoLive.length > 0) {
-            const games = [...evoLive].slice(0, 15);
-            liveGrid.innerHTML = games.map(g => wrapCard(g, true)).join('');
-        } else if (liveGrid) { liveGrid.innerHTML = '<div class="text-gray-500 text-xs px-2 py-4">Bientôt disponible</div>'; }
+            // 4. اللايف كازينو
+            const liveGrid = document.getElementById('home-live-grid');
+            if(liveGrid) liveGrid.innerHTML = (evoLive && evoLive.length > 0) 
+                ? [...evoLive].slice(0, 15).map(g => wrapCard(g, true)).join('') 
+                : '<div class="text-gray-500 text-xs px-2 py-4">Aucun jeu disponible</div>';
+
+        } catch (error) {
+            console.error("Erreur de chargement:", error);
+            // إخفاء دوائر التحميل وكتابة رسالة في حال فشل الاتصال بالسيرفر
+            ['home-popular-grid', 'home-bonus-grid', 'home-crash-grid', 'home-live-grid'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = '<div class="text-gray-500 text-xs px-2 py-4">Erreur de connexion</div>';
+            });
+        }
     }
     // ================= 4. واجهة ألعاب اليوم =================
     async function loadGamesOfTheDay() {

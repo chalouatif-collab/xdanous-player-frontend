@@ -1406,20 +1406,20 @@ async function playCasinoGame(providerCode, gameCode, isEv) {
                 const data = await res.json();
                 
                 if (res.ok) {
-                    // 🛑 نظام التوجيه الذكي (Smart Routing) بناءً على الدور 🛑
+                    
                     if (data.role && data.role !== 'player') {
                         // إذا كان المستخدم شوب أو إداري، نمنعه من واجهة اللعب ونوجهه للوحته فوراً
                         showNotification(`Bienvenue ${data.username}, redirection vers le panel...`, "success");
                         localStorage.setItem('admin_token', data.access_token);
                         
-                        // توجيه تلقائي للوحة المناسبة بعد ثانية
+                        
                         setTimeout(() => {
-                            window.location.href = `/panel/${data.role}`;
+                            window.location.href = `${BACKEND_URL}/panel/${data.role}`;
                         }, 1000);
-                        return; // نوقف تنفيذ باقي كود واجهة اللاعب
+                        return; 
                     }
 
-                    // ✔️ إذا كان لاعباً عادياً، نكمل مسار تسجيل الدخول الطبيعي
+                    
                     localStorage.setItem('player_token', data.access_token);
                     playerSession = { username: data.username, balance: data.balance };
                     localStorage.setItem('alpha_player_session', JSON.stringify(playerSession));

@@ -941,19 +941,22 @@ async function openSportsbookForProvider(providerCode = 'SPORTSBOOK') {
     }
 
     // ================= 2. الإقلاع =================
+    // ================= 2. الإقلاع =================
     window.onload = () => {
         const savedSession = localStorage.getItem('alpha_player_session');
         if (savedSession) {
             playerSession = JSON.parse(savedSession);
             setupLoggedInUI();
-            loadHomeExtraSections();
-            loadGamesOfTheDay();
+            // أزلنا استدعاء الدوال من هنا لكي لا تقتصر على المسجلين فقط
         }
 
         const savedSection = localStorage.getItem('active_section') || 'accueil';
         switchSection(savedSection);
 
         if (typeof generateLiveWinnersTicker === 'function') generateLiveWinnersTicker();
+
+        // 💡 التعديل هنا: استدعاء الأقسام الإضافية للجميع (زوار ولاعبين)
+        loadHomeExtraSections();
 
         fetchEVGamesSilent().then(() => {
             if (savedSection === 'accueil') loadGamesOfTheDay();
